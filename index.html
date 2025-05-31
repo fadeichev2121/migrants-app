@@ -4,12 +4,28 @@
     <meta charset="UTF-8" />
     <title>WhatsApp HR</title>
     <link rel="manifest" href="manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2196F3">
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      iframe {
+        border: none;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
     <script>
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("service-worker.js");
       }
-      window.location.replace("https://script.google.com/macros/s/AKfycbzuM4Fdi4d1ayKWPJQs9XH2DnHca0YCfUqjowKgfHGqqHsP2Uwm4P5XRQJx8ubn5fAhyA/exec");
     </script>
   </head>
-  <body></body>
+  <body>
+    <iframe src="https://script.google.com/macros/s/AKfycbzuM4Fdi4d1ayKWPJQs9XH2DnHca0YCfUqjowKgfHGqqHsP2Uwm4P5XRQJx8ubn5fAhyA/exec" allow="fullscreen"></iframe>
+  </body>
 </html>
