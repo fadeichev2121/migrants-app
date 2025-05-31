@@ -1,7 +1,7 @@
 {
   "name": "WhatsApp HR",
-  "short_name": "HR Notify",
-  "start_url": "./",
+  "short_name": "HR",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2196F3",
