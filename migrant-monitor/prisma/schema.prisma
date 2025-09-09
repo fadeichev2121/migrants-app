@@ -10,14 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  OWNER
-  HR_ADMIN
-  HR
-  MANAGER
-  EMPLOYEE
-}
-
 enum DocumentType {
   PASSPORT
   PATENT
@@ -28,24 +20,6 @@ enum DocumentType {
 enum Status {
   ACTIVE
   SENT
-}
-
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String?
-  role      UserRole @default(EMPLOYEE)
-  department String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Audit logs
-  auditLogs AuditLog[]
-  // Files uploaded by user
-  uploadedFiles EmployeeFile[]
-
-  @@map("users")
 }
 
 model Employee {
@@ -69,7 +43,6 @@ model Employee {
 
   // Связи
   files        EmployeeFile[]
-  auditLogs    AuditLog[]
 
   @@map("employees")
 }
@@ -92,29 +65,10 @@ model EmployeeFile {
   // Извлеченная дата (OCR)
   extractedDate DateTime?
   
-  uploadedBy   String      // ID пользователя
   uploadedAt   DateTime    @default(now())
 
   // Связи
   employee     Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  uploader     User        @relation(fields: [uploadedBy], references: [id])
 
   @@map("employee_files")
-}
-
-model AuditLog {
-  id         String   @id @default(cuid())
-  employeeId String?
-  userId     String
-  action     String   // Действие (update_date, update_comment, update_status, etc.)
-  field      String?  // Поле которое изменили
-  oldValue   String?  // Старое значение
-  newValue   String?  // Новое значение
-  createdAt  DateTime @default(now())
-
-  // Связи
-  employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  user       User      @relation(fields: [userId], references: [id])
-
-  @@map("audit_logs")
 }
