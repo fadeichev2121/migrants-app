@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Status } from '@prisma/client'
 import EmployeeCard from './employee-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -31,11 +31,7 @@ export default function EmployeeList({ showOnlyUrgent }: EmployeeListProps) {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'active' | 'sent'>('active')
 
-  useEffect(() => {
-    fetchEmployees()
-  }, [showOnlyUrgent])
-
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
@@ -56,7 +52,11 @@ export default function EmployeeList({ showOnlyUrgent }: EmployeeListProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showOnlyUrgent])
+
+  useEffect(() => {
+    fetchEmployees()
+  }, [showOnlyUrgent, fetchEmployees])
 
   const handleEmployeeUpdate = (updatedEmployee: Employee) => {
     setEmployees(prev => 

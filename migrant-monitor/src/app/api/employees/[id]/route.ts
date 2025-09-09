@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const employeeId = params.id
+    const { id: employeeId } = await params
     const body = await request.json()
 
     // Получаем текущего сотрудника
@@ -19,7 +19,7 @@ export async function PATCH(
     }
 
     // Подготавливаем данные для обновления
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
 
     // Обновление статуса
     if (body.status !== undefined) {
@@ -77,10 +77,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const employeeId = params.id
+    const { id: employeeId } = await params
 
     // Проверяем существование
     const employee = await prisma.employee.findUnique({

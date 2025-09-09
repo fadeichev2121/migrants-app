@@ -2,10 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Download, X, Smartphone, Sparkles } from 'lucide-react'
+import { Download, X, Smartphone } from 'lucide-react'
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>
+  userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed'
+    platform: string
+  }>
+}
 
 export default function PWAInstaller() {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [isInstalling, setIsInstalling] = useState(false)
 
@@ -40,8 +48,11 @@ export default function PWAInstaller() {
     if (!deferredPrompt) return
 
     setIsInstalling(true)
-    deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
+    
+    // Type assertion для BeforeInstallPromptEvent
+    const promptEvent = deferredPrompt as BeforeInstallPromptEvent
+    promptEvent.prompt()
+    const { outcome } = await promptEvent.userChoice
 
     if (outcome === 'accepted') {
       console.log('PWA установлено')

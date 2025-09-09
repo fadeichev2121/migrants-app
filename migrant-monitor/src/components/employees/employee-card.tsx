@@ -11,9 +11,6 @@ import {
   Send,
   Check,
   X,
-  Calendar,
-  MessageSquare,
-  Paperclip,
   Building2,
   Clock,
   AlertCircle,
@@ -57,7 +54,6 @@ interface EmployeeCardProps {
 
 export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) {
   const [isUpdating, setIsUpdating] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
   
   const problems = getEmployeeProblems(employee)
   const hasValidPhone = employee.phone && normalizePhone(employee.phone).length >= 10
@@ -151,8 +147,6 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
   return (
     <Card 
       className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-white/20 dark:border-gray-700/50 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 dark:from-blue-400/5 dark:to-indigo-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

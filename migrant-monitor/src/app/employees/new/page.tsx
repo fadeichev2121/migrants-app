@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, User, Phone, Building2, Calendar, MessageSquare, Sparkles, Save } from 'lucide-react'
+import { ArrowLeft, User, Phone, Building2, Calendar, MessageSquare, Sparkles, Save, X } from 'lucide-react'
 import { capitalizeFullName, normalizePhone } from '@/lib/utils'
 
 export default function NewEmployeePage() {
@@ -77,8 +77,8 @@ export default function NewEmployeePage() {
         const data = await response.json()
         throw new Error(data.error || 'Ошибка при создании сотрудника')
       }
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Произошла ошибка')
     } finally {
       setIsSubmitting(false)
     }

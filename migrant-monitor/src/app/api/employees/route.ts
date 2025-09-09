@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const department = searchParams.get('department')
 
     // Базовый запрос
-    let whereClause: any = {}
+    const whereClause: Record<string, unknown> = {}
 
     // Фильтр по отделу
     if (department) {

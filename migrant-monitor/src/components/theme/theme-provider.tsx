@@ -36,7 +36,7 @@ export function ThemeProvider({
     if (savedTheme) {
       setTheme(savedTheme)
     }
-  }, [])
+  }, [storageKey])
 
   useEffect(() => {
     const root = window.document.documentElement
