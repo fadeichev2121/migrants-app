@@ -28,9 +28,15 @@ export function ThemeProvider({
   storageKey = 'migrant-monitor-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage?.getItem(storageKey) as Theme) || defaultTheme
-  )
+  const [theme, setTheme] = useState<Theme>(defaultTheme)
+
+  // Загружаем тему из localStorage после монтирования компонента
+  useEffect(() => {
+    const savedTheme = localStorage?.getItem(storageKey) as Theme
+    if (savedTheme) {
+      setTheme(savedTheme)
+    }
+  }, [])
 
   useEffect(() => {
     const root = window.document.documentElement

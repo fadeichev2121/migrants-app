@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -11,7 +10,6 @@ import { ArrowLeft } from 'lucide-react'
 import { capitalizeFullName, normalizePhone } from '@/lib/utils'
 
 export default function NewEmployeePage() {
-  const { data: session, status } = useSession()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -26,21 +24,6 @@ export default function NewEmployeePage() {
     checkDate: '',
     comment: ''
   })
-
-  // Проверка доступа
-  if (status === 'loading') {
-    return <div className="min-h-screen flex items-center justify-center">Загрузка...</div>
-  }
-
-  if (!session) {
-    router.push('/auth/signin')
-    return null
-  }
-
-  if (!['OWNER', 'HR_ADMIN', 'HR'].includes(session.user.role)) {
-    router.push('/')
-    return null
-  }
 
   const handleInputChange = (field: string, value: string) => {
     let processedValue = value
@@ -102,9 +85,9 @@ export default function NewEmployeePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center py-4">
             <Button
@@ -116,7 +99,7 @@ export default function NewEmployeePage() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Назад
             </Button>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Добавить сотрудника
             </h1>
           </div>
@@ -139,7 +122,7 @@ export default function NewEmployeePage() {
                 <h3 className="text-lg font-medium">Основная информация</h3>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     ФИО *
                   </label>
                   <Input
@@ -151,7 +134,7 @@ export default function NewEmployeePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Телефон
                   </label>
                   <Input
@@ -160,13 +143,13 @@ export default function NewEmployeePage() {
                     placeholder="79001234567"
                     type="tel"
                   />
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Только цифры, минимум 10 символов
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Отдел/Локация
                   </label>
                   <Input
@@ -183,7 +166,7 @@ export default function NewEmployeePage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Патент
                     </label>
                     <Input
@@ -194,7 +177,7 @@ export default function NewEmployeePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Регистрация
                     </label>
                     <Input
@@ -205,7 +188,7 @@ export default function NewEmployeePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Паспорт
                     </label>
                     <Input
@@ -216,7 +199,7 @@ export default function NewEmployeePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Чек
                     </label>
                     <Input
@@ -230,7 +213,7 @@ export default function NewEmployeePage() {
 
               {/* Комментарий */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Комментарий
                 </label>
                 <Textarea
@@ -243,7 +226,7 @@ export default function NewEmployeePage() {
 
               {/* Ошибка */}
               {error && (
-                <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md">
+                <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
                   {error}
                 </div>
               )}

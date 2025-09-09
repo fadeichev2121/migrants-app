@@ -9,15 +9,13 @@ import { cn } from '@/lib/utils'
 interface CommentEditorProps {
   comment: string
   onUpdate: (comment: string) => void
-  disabled?: boolean
 }
 
-export default function CommentEditor({ comment, onUpdate, disabled }: CommentEditorProps) {
+export default function CommentEditor({ comment, onUpdate }: CommentEditorProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState('')
 
   const handleEdit = () => {
-    if (disabled) return
     setInputValue(comment)
     setIsEditing(true)
   }
@@ -72,28 +70,26 @@ export default function CommentEditor({ comment, onUpdate, disabled }: CommentEd
 
   return (
     <div className="space-y-1">
-      <label className="text-xs font-medium text-gray-700">Комментарий</label>
+      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Комментарий</label>
       <button
         onClick={handleEdit}
-        disabled={disabled}
         className={cn(
           "w-full text-left p-2 rounded-md border text-sm transition-colors min-h-[60px]",
           "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500",
-          disabled && "cursor-not-allowed opacity-60",
-          "bg-gray-50 text-gray-700 border-gray-200"
+          "dark:hover:bg-gray-700",
+          "bg-gray-50 text-gray-700 border-gray-200",
+          "dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
         )}
       >
         <div className="flex items-start justify-between">
           <span className="flex-1">
             {comment || (
-              <span className="text-gray-400 italic">
+              <span className="text-gray-400 dark:text-gray-500 italic">
                 Нажмите для добавления комментария...
               </span>
             )}
           </span>
-          {!disabled && (
-            <MessageSquare className="w-3 h-3 text-gray-400 ml-2 flex-shrink-0 mt-0.5" />
-          )}
+          <MessageSquare className="w-3 h-3 text-gray-400 ml-2 flex-shrink-0 mt-0.5" />
         </div>
       </button>
     </div>

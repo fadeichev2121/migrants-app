@@ -1,8 +1,7 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
 import EmployeeList from '@/components/employees/employee-list'
 import PWAInstaller from '@/components/pwa/pwa-installer'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
@@ -10,28 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 
 export default function HomePage() {
-  const { data: session, status } = useSession()
   const router = useRouter()
   const [showOnlyUrgent, setShowOnlyUrgent] = useState(false)
-
-  useEffect(() => {
-    if (status === 'loading') return
-    if (!session) {
-      router.push('/auth/signin')
-    }
-  }, [session, status, router])
-
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Загрузка...</div>
-      </div>
-    )
-  }
-
-  if (!session) {
-    return null
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -44,7 +23,7 @@ export default function HomePage() {
                 Уведомления WhatsApp
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Добро пожаловать, {session.user.name || session.user.email}
+                Монитор документов мигрантов
               </p>
             </div>
             
@@ -64,15 +43,13 @@ export default function HomePage() {
               <ThemeToggle />
               
               {/* Кнопка добавления сотрудника */}
-              {(session.user.role === 'OWNER' || session.user.role === 'HR_ADMIN' || session.user.role === 'HR') && (
-                <Button
-                  onClick={() => router.push('/employees/new')}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Добавить сотрудника
-                </Button>
-              )}
+              <Button
+                onClick={() => router.push('/employees/new')}
+                className="flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Добавить сотрудника
+              </Button>
             </div>
           </div>
         </div>
@@ -82,8 +59,6 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <EmployeeList 
           showOnlyUrgent={showOnlyUrgent}
-          userRole={session.user.role}
-          userDepartment={session.user.department}
         />
       </main>
 

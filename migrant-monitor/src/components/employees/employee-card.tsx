@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Status, UserRole } from '@prisma/client'
+import { Status } from '@prisma/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -48,10 +48,9 @@ interface Employee {
 interface EmployeeCardProps {
   employee: Employee
   onUpdate: (employee: Employee) => void
-  userRole: UserRole
 }
 
-export default function EmployeeCard({ employee, onUpdate, userRole }: EmployeeCardProps) {
+export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) {
   const [isUpdating, setIsUpdating] = useState(false)
   
   const problems = getEmployeeProblems(employee)
@@ -124,11 +123,11 @@ export default function EmployeeCard({ employee, onUpdate, userRole }: EmployeeC
   const getDateClassName = (status: string) => {
     switch (status) {
       case 'expired':
-        return 'bg-red-100 text-red-900 border-red-200'
+        return 'bg-red-100 text-red-900 border-red-200 dark:bg-red-900/20 dark:text-red-100 dark:border-red-800'
       case 'expiring':
-        return 'bg-yellow-100 text-yellow-900 border-yellow-200'
+        return 'bg-yellow-100 text-yellow-900 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-100 dark:border-yellow-800'
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200'
+        return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
     }
   }
 
@@ -139,11 +138,11 @@ export default function EmployeeCard({ employee, onUpdate, userRole }: EmployeeC
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             {employee.number && (
-              <span className="text-sm text-gray-500 font-mono">
+              <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">
                 №{employee.number}
               </span>
             )}
-            <h3 className="text-lg font-bold text-gray-900">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
               {employee.fullName}
             </h3>
             {employee.status === Status.SENT && (
@@ -164,7 +163,7 @@ export default function EmployeeCard({ employee, onUpdate, userRole }: EmployeeC
           <div className="mb-4">
             <div className="space-y-2">
               {problems.map((problem, index) => (
-                <div key={index} className="text-red-600 text-sm">
+                <div key={index} className="text-red-600 dark:text-red-400 text-sm">
                   {problem}
                 </div>
               ))}
@@ -179,7 +178,6 @@ export default function EmployeeCard({ employee, onUpdate, userRole }: EmployeeC
             date={employee.patentDate}
             onUpdate={(date) => handleDateUpdate('patentDate', date)}
             className={getDateClassName(getDateStatus(employee.patentDate))}
-            disabled={!['OWNER', 'HR_ADMIN', 'HR'].includes(userRole)}
           />
           
           <DateEditor
@@ -187,7 +185,6 @@ export default function EmployeeCard({ employee, onUpdate, userRole }: EmployeeC
             date={employee.registrationDate}
             onUpdate={(date) => handleDateUpdate('registrationDate', date)}
             className={getDateClassName(getDateStatus(employee.registrationDate))}
-            disabled={!['OWNER', 'HR_ADMIN', 'HR'].includes(userRole)}
           />
           
           <DateEditor
@@ -195,7 +192,6 @@ export default function EmployeeCard({ employee, onUpdate, userRole }: EmployeeC
             date={employee.passportDate}
             onUpdate={(date) => handleDateUpdate('passportDate', date)}
             className={getDateClassName(getDateStatus(employee.passportDate))}
-            disabled={!['OWNER', 'HR_ADMIN', 'HR'].includes(userRole)}
           />
           
           <DateEditor
@@ -203,7 +199,6 @@ export default function EmployeeCard({ employee, onUpdate, userRole }: EmployeeC
             date={employee.checkDate}
             onUpdate={(date) => handleDateUpdate('checkDate', date)}
             className={getDateClassName(getDateStatus(employee.checkDate))}
-            disabled={!['OWNER', 'HR_ADMIN', 'HR'].includes(userRole)}
           />
         </div>
 
@@ -212,14 +207,13 @@ export default function EmployeeCard({ employee, onUpdate, userRole }: EmployeeC
           <CommentEditor
             comment={employee.comment || ''}
             onUpdate={handleCommentUpdate}
-            disabled={!['OWNER', 'HR_ADMIN', 'HR', 'MANAGER'].includes(userRole)}
           />
         </div>
 
         {/* Телефон и действия */}
         <div className="space-y-3">
           {employee.phone && (
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               <span className="font-medium">Телефон:</span> {formatPhone(employee.phone)}
             </div>
           )}
@@ -261,27 +255,25 @@ export default function EmployeeCard({ employee, onUpdate, userRole }: EmployeeC
             )}
             
             {/* Кнопка отправлено/отменить */}
-            {['OWNER', 'HR_ADMIN', 'HR', 'MANAGER'].includes(userRole) && (
-              <Button
-                size="sm"
-                variant={employee.status === Status.SENT ? "destructive" : "default"}
-                onClick={handleStatusToggle}
-                disabled={isUpdating}
-                className="flex items-center gap-2"
-              >
-                {employee.status === Status.SENT ? (
-                  <>
-                    <X className="w-4 h-4" />
-                    Отменить
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    Отправлено
-                  </>
-                )}
-              </Button>
-            )}
+            <Button
+              size="sm"
+              variant={employee.status === Status.SENT ? "destructive" : "default"}
+              onClick={handleStatusToggle}
+              disabled={isUpdating}
+              className="flex items-center gap-2"
+            >
+              {employee.status === Status.SENT ? (
+                <>
+                  <X className="w-4 h-4" />
+                  Отменить
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4" />
+                  Отправлено
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </CardContent>

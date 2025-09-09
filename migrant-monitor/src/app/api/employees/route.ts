@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { UserRole } from '@prisma/client'
 import { isDateUrgent } from '@/lib/utils'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { searchParams } = new URL(request.url)
     const urgent = searchParams.get('urgent') === 'true'
     const department = searchParams.get('department')
@@ -20,21 +11,14 @@ export async function GET(request: NextRequest) {
     // Базовый запрос
     let whereClause: any = {}
 
-    // Фильтр по отделу для менеджеров
-    if (session.user.role === UserRole.MANAGER && (department || session.user.department)) {
-      whereClause.department = department || session.user.department
-    }
-
-    // Для employee - только свой профиль
-    if (session.user.role === UserRole.EMPLOYEE) {
-      // В будущем можно добавить связь employee -> user
-      return NextResponse.json([])
+    // Фильтр по отделу
+    if (department) {
+      whereClause.department = department
     }
 
     const employees = await prisma.employee.findMany({
       where: whereClause,
       orderBy: [
-        { number: 'asc' },
         { fullName: 'asc' }
       ]
     })
@@ -71,17 +55,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Проверяем права доступа
-    if (!['OWNER', 'HR_ADMIN', 'HR'].includes(session.user.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const body = await request.json()
     const {
       fullName,
@@ -113,20 +86,6 @@ export async function POST(request: NextRequest) {
         passportDate: parseDate(passportDate),
         checkDate: parseDate(checkDate),
         comment: comment?.trim() || null
-      }
-    })
-
-    // Создаем audit log
-    await prisma.auditLog.create({
-      data: {
-        employeeId: employee.id,
-        userId: session.user.id,
-        action: 'create_employee',
-        newValue: JSON.stringify({
-          fullName: employee.fullName,
-          phone: employee.phone,
-          department: employee.department
-        })
       }
     })
 

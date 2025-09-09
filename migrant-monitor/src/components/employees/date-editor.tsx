@@ -12,15 +12,13 @@ interface DateEditorProps {
   date: Date | null
   onUpdate: (date: Date | null) => void
   className?: string
-  disabled?: boolean
 }
 
-export default function DateEditor({ label, date, onUpdate, className, disabled }: DateEditorProps) {
+export default function DateEditor({ label, date, onUpdate, className }: DateEditorProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState('')
 
   const handleEdit = () => {
-    if (disabled) return
     setInputValue(formatDate(date))
     setIsEditing(true)
   }
@@ -71,14 +69,13 @@ export default function DateEditor({ label, date, onUpdate, className, disabled 
 
   return (
     <div className="space-y-1">
-      <label className="text-xs font-medium text-gray-700">{label}</label>
+      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{label}</label>
       <button
         onClick={handleEdit}
-        disabled={disabled}
         className={cn(
           "w-full text-left p-2 rounded-md border text-sm transition-colors",
           "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500",
-          disabled && "cursor-not-allowed opacity-60",
+          "dark:hover:bg-gray-700",
           className
         )}
       >
@@ -86,9 +83,7 @@ export default function DateEditor({ label, date, onUpdate, className, disabled 
           <span>
             {date ? formatDate(date) : 'Не указано'}
           </span>
-          {!disabled && (
-            <Calendar className="w-3 h-3 text-gray-400" />
-          )}
+          <Calendar className="w-3 h-3 text-gray-400" />
         </div>
       </button>
     </div>

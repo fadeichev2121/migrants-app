@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { UserRole, Status } from '@prisma/client'
+import { Status } from '@prisma/client'
 import EmployeeCard from './employee-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -23,18 +23,16 @@ interface Employee {
 
 interface EmployeeListProps {
   showOnlyUrgent: boolean
-  userRole: UserRole
-  userDepartment?: string
 }
 
-export default function EmployeeList({ showOnlyUrgent, userRole, userDepartment }: EmployeeListProps) {
+export default function EmployeeList({ showOnlyUrgent }: EmployeeListProps) {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'active' | 'sent'>('active')
 
   useEffect(() => {
     fetchEmployees()
-  }, [showOnlyUrgent, userRole, userDepartment])
+  }, [showOnlyUrgent])
 
   const fetchEmployees = async () => {
     try {
@@ -43,10 +41,6 @@ export default function EmployeeList({ showOnlyUrgent, userRole, userDepartment 
       
       if (showOnlyUrgent) {
         params.set('urgent', 'true')
-      }
-      
-      if (userRole === 'MANAGER' && userDepartment) {
-        params.set('department', userDepartment)
       }
 
       const response = await fetch(`/api/employees?${params.toString()}`)
@@ -77,7 +71,7 @@ export default function EmployeeList({ showOnlyUrgent, userRole, userDepartment 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-lg text-gray-600">Загрузка сотрудников...</div>
+        <div className="text-lg text-gray-600 dark:text-gray-400">Загрузка сотрудников...</div>
       </div>
     )
   }
@@ -98,8 +92,8 @@ export default function EmployeeList({ showOnlyUrgent, userRole, userDepartment 
           {activeEmployees.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-4xl mb-4">✅</div>
-              <div className="text-lg text-gray-600">Всё в порядке</div>
-              <div className="text-sm text-gray-500 mt-2">
+              <div className="text-lg text-gray-600 dark:text-gray-400">Всё в порядке</div>
+              <div className="text-sm text-gray-500 dark:text-gray-500 mt-2">
                 Нет сотрудников с проблемными документами
               </div>
             </div>
@@ -110,7 +104,6 @@ export default function EmployeeList({ showOnlyUrgent, userRole, userDepartment 
                   key={employee.id}
                   employee={employee}
                   onUpdate={handleEmployeeUpdate}
-                  userRole={userRole}
                 />
               ))}
             </div>
@@ -121,8 +114,8 @@ export default function EmployeeList({ showOnlyUrgent, userRole, userDepartment 
           {sentEmployees.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-4xl mb-4">✉️</div>
-              <div className="text-lg text-gray-600">Пока ничего не отправлено</div>
-              <div className="text-sm text-gray-500 mt-2">
+              <div className="text-lg text-gray-600 dark:text-gray-400">Пока ничего не отправлено</div>
+              <div className="text-sm text-gray-500 dark:text-gray-500 mt-2">
                 Сотрудники с отправленными уведомлениями появятся здесь
               </div>
             </div>
@@ -133,7 +126,6 @@ export default function EmployeeList({ showOnlyUrgent, userRole, userDepartment 
                   key={employee.id}
                   employee={employee}
                   onUpdate={handleEmployeeUpdate}
-                  userRole={userRole}
                 />
               ))}
             </div>
