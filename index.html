@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WhatsApp HR</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2196F3" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -46,5 +48,19 @@
   >
     Перейти в приложение
   </a>
+  
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then((registration) => {
+            console.log('SW registered: ', registration);
+          })
+          .catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
