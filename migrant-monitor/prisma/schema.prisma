@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum DocumentType {
+  PASSPORT
+  PATENT
+  REGISTRATION
+  CHECK
+}
+
+enum Status {
+  ACTIVE
+  SENT
+}
+
+model Employee {
+  id           String    @id @default(cuid())
+  number       Int?      // Автонумерация
+  fullName     String    // ФИО
+  phone        String?   // Телефон (только цифры)
+  department   String?   // Отдел/Локация
+  
+  // Даты документов
+  patentDate        DateTime?
+  registrationDate  DateTime?
+  passportDate      DateTime?
+  checkDate         DateTime?
+  
+  comment      String?   // Комментарий
+  status       Status    @default(ACTIVE) // Статус отправки
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Связи
+  files        EmployeeFile[]
+
+  @@map("employees")
+}
+
+model EmployeeFile {
+  id           String      @id @default(cuid())
+  employeeId   String
+  docType      DocumentType
+  storageKey   String      // Путь к файлу
+  fileName     String      // Оригинальное имя файла
+  mimeType     String      // MIME тип
+  size         Int         // Размер в байтах
+  checksum     String?     // Контрольная сумма
+  isActive     Boolean     @default(true) // Для паспорт/патент версионность
+  
+  // Для чеков - период
+  periodMonth  Int?
+  periodYear   Int?
+  
+  // Извлеченная дата (OCR)
+  extractedDate DateTime?
+  
+  uploadedAt   DateTime    @default(now())
+
+  // Связи
+  employee     Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_files")
+}
