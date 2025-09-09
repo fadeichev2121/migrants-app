@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  HR_ADMIN
+  HR
+  MANAGER
+  EMPLOYEE
+}
+
+enum DocumentType {
+  PASSPORT
+  PATENT
+  REGISTRATION
+  CHECK
+}
+
+enum Status {
+  ACTIVE
+  SENT
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      UserRole @default(EMPLOYEE)
+  department String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Audit logs
+  auditLogs AuditLog[]
+  // Files uploaded by user
+  uploadedFiles EmployeeFile[]
+
+  @@map("users")
+}
+
+model Employee {
+  id           String    @id @default(cuid())
+  number       Int?      // Автонумерация
+  fullName     String    // ФИО
+  phone        String?   // Телефон (только цифры)
+  department   String?   // Отдел/Локация
+  
+  // Даты документов
+  patentDate        DateTime?
+  registrationDate  DateTime?
+  passportDate      DateTime?
+  checkDate         DateTime?
+  
+  comment      String?   // Комментарий
+  status       Status    @default(ACTIVE) // Статус отправки
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Связи
+  files        EmployeeFile[]
+  auditLogs    AuditLog[]
+
+  @@map("employees")
+}
+
+model EmployeeFile {
+  id           String      @id @default(cuid())
+  employeeId   String
+  docType      DocumentType
+  storageKey   String      // Путь к файлу
+  fileName     String      // Оригинальное имя файла
+  mimeType     String      // MIME тип
+  size         Int         // Размер в байтах
+  checksum     String?     // Контрольная сумма
+  isActive     Boolean     @default(true) // Для паспорт/патент версионность
+  
+  // Для чеков - период
+  periodMonth  Int?
+  periodYear   Int?
+  
+  // Извлеченная дата (OCR)
+  extractedDate DateTime?
+  
+  uploadedBy   String      // ID пользователя
+  uploadedAt   DateTime    @default(now())
+
+  // Связи
+  employee     Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  uploader     User        @relation(fields: [uploadedBy], references: [id])
+
+  @@map("employee_files")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  employeeId String?
+  userId     String
+  action     String   // Действие (update_date, update_comment, update_status, etc.)
+  field      String?  // Поле которое изменили
+  oldValue   String?  // Старое значение
+  newValue   String?  // Новое значение
+  createdAt  DateTime @default(now())
+
+  // Связи
+  employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
