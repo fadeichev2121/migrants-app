@@ -34,22 +34,105 @@
       transition: background-color 0.3s;
     }
 
-    a.button:hover {
+    a.button:hover,
+    button.button:hover {
+      background-color: #1ebe5b;
+    }
+
+    button.button {
+      margin: 10px;
+      padding: 15px 30px;
+      background-color: #25D366;
+      color: white;
+      border: none;
+      font-size: 18px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s;
+      cursor: pointer;
+    }
+
+    button.button.secondary {
+      background-color: #128C7E;
+    }
+
+    button.button.secondary:hover {
+      background-color: #075E54;
+    }
+
+    .app-container {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .contacts-section {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin-top: 20px;
+    }
+
+    .contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .contact-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: left;
+    }
+
+    .contact-item button {
+      background-color: #25D366;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .contact-item button:hover {
       background-color: #1ebe5b;
     }
   </style>
 </head>
 <body>
-  <h1>Открыть WhatsApp HR</h1>
-  <a
-    class="button"
-    href="https://script.google.com/macros/s/AKfycbz8nA20kpbXFgDBCatadBujRTFQP2CGHhlRzzfmUNx3mdw24Cii7k2DlAgVRwuLDwGpzA/exec"
-    target="_blank"
-  >
-    Перейти в приложение
-  </a>
+  <h1>WhatsApp HR</h1>
+  <div class="app-container">
+    <p>Добро пожаловать в WhatsApp HR систему!</p>
+    <button class="button" onclick="openWhatsApp()">
+      Открыть WhatsApp
+    </button>
+    <button class="button secondary" onclick="showContacts()">
+      Показать контакты
+    </button>
+  </div>
+  
+  <div id="contacts" class="contacts-section" style="display: none;">
+    <h2>HR Контакты</h2>
+    <div class="contact-list">
+      <div class="contact-item">
+        <strong>Отдел кадров</strong>
+        <p>+7 (xxx) xxx-xx-xx</p>
+        <button onclick="openWhatsAppChat('+7xxxxxxxxxx')">Написать в WhatsApp</button>
+      </div>
+      <div class="contact-item">
+        <strong>Руководитель HR</strong>
+        <p>+7 (xxx) xxx-xx-xx</p>
+        <button onclick="openWhatsAppChat('+7xxxxxxxxxx')">Написать в WhatsApp</button>
+      </div>
+    </div>
+  </div>
   
   <script>
+    // Service Worker registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js')
@@ -60,6 +143,27 @@
             console.log('SW registration failed: ', registrationError);
           });
       });
+    }
+
+    // App functions - no authorization required
+    function openWhatsApp() {
+      // Direct WhatsApp Web access without authorization
+      window.open('https://web.whatsapp.com/', '_blank');
+    }
+
+    function showContacts() {
+      const contactsSection = document.getElementById('contacts');
+      if (contactsSection.style.display === 'none') {
+        contactsSection.style.display = 'block';
+      } else {
+        contactsSection.style.display = 'none';
+      }
+    }
+
+    function openWhatsAppChat(phoneNumber) {
+      // Direct WhatsApp chat without authorization
+      const whatsappUrl = `https://wa.me/${phoneNumber.replace(/\D/g, '')}`;
+      window.open(whatsappUrl, '_blank');
     }
   </script>
 </body>
