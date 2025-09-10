@@ -15,19 +15,16 @@ enum DocumentType {
   PATENT
   REGISTRATION
   CHECK
-}
-
-enum Status {
-  ACTIVE
-  SENT
+  OTHER
 }
 
 model Employee {
   id           String    @id @default(cuid())
-  number       Int?      // Автонумерация
   fullName     String    // ФИО
   phone        String?   // Телефон (только цифры)
   department   String?   // Отдел/Локация
+  comment      String?   // Комментарий
+  sent         Boolean   @default(false) // Статус отправки
   
   // Даты документов
   patentDate        DateTime?
@@ -35,40 +32,39 @@ model Employee {
   passportDate      DateTime?
   checkDate         DateTime?
   
-  comment      String?   // Комментарий
-  status       Status    @default(ACTIVE) // Статус отправки
-  
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   // Связи
-  files        EmployeeFile[]
+  documents    Document[]
 
   @@map("employees")
 }
 
-model EmployeeFile {
+model Document {
   id           String      @id @default(cuid())
   employeeId   String
-  docType      DocumentType
-  storageKey   String      // Путь к файлу
+  type         DocumentType
   fileName     String      // Оригинальное имя файла
   mimeType     String      // MIME тип
   size         Int         // Размер в байтах
-  checksum     String?     // Контрольная сумма
-  isActive     Boolean     @default(true) // Для паспорт/патент версионность
-  
-  // Для чеков - период
-  periodMonth  Int?
-  periodYear   Int?
-  
-  // Извлеченная дата (OCR)
-  extractedDate DateTime?
-  
+  storedAt     String      // Путь к файлу в файловой системе
   uploadedAt   DateTime    @default(now())
 
   // Связи
   employee     Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  @@map("employee_files")
+  @@map("documents")
+}
+
+model Settings {
+  id               Int     @id @default(1) // Singleton
+  urgentDaysDefault Int    @default(7)     // Дни до срочности (по умолчанию)
+  warnDaysDefault   Int    @default(30)    // Дни до предупреждения (по умолчанию)
+  perFieldOverrides Json?  // Переопределения порогов по полям
+  whatsappTemplate  String @default("Здравствуйте, {name}! {problems}. Пожалуйста, пришлите сканы.")
+  
+  updatedAt        DateTime @updatedAt @default(now())
+
+  @@map("settings")
 }
