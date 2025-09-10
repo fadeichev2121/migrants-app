@@ -26,6 +26,9 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Монитор мигрантов"
+  },
+  icons: {
+    apple: '/apple-touch-icon.png'
   }
 };
 
