@@ -1,11 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
 import { 
   Phone, 
   MessageCircle, 
@@ -17,7 +15,6 @@ import {
   MessageSquare,
   FileText,
   Loader2,
-  Edit,
   ChevronRight
 } from 'lucide-react'
 import { 
@@ -29,13 +26,10 @@ import {
 } from '@/lib/utils'
 import { 
   getDocumentStatus,
-  getStatusClasses,
   formatDate,
   getEmployeeProblems,
   generateWhatsAppMessage
 } from '@/lib/document-status'
-import DateEditor from './date-editor'
-import CommentEditor from './comment-editor'
 import DocumentManager from './document-manager'
 
 interface Employee {
@@ -91,6 +85,36 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
   }
 
+  const getStatusStyle = (date: Date | null) => {
+    const status = getDocumentStatus(date)
+    switch (status) {
+      case 'expired':
+        return {
+          background: '#fef2f2',
+          color: '#991b1b',
+          border: '1px solid #fecaca'
+        }
+      case 'warning':
+        return {
+          background: '#fffbeb',
+          color: '#92400e',
+          border: '1px solid #fde68a'
+        }
+      case 'success':
+        return {
+          background: '#f0fdf4',
+          color: '#166534',
+          border: '1px solid #bbf7d0'
+        }
+      default:
+        return {
+          background: '#f9fafb',
+          color: '#6b7280',
+          border: '1px solid #e5e7eb'
+        }
+    }
+  }
+
   const documentFields = [
     { key: 'patentDate', label: 'Патент', date: employee.patentDate },
     { key: 'registrationDate', label: 'Регистрация', date: employee.registrationDate },
@@ -99,215 +123,371 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
   ]
 
   return (
-    <Card className="shadow-sm hover:shadow-md transition-all duration-200 border-0 bg-white dark:bg-gray-900">
-      <CardHeader className="pb-6">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-14 w-14 ring-2 ring-gray-100 dark:ring-gray-800">
-              <AvatarFallback className="bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-semibold text-lg">
-                {getInitials(employee.fullName)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="space-y-2">
-              <CardTitle className="text-xl text-gray-900 dark:text-white">
-                {employee.fullName}
-              </CardTitle>
-              {employee.department && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Building2 className="h-4 w-4" />
-                  {employee.department}
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            {employee.sent && (
-              <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 border-green-200 dark:border-green-800">
-                <Check className="h-3 w-3 mr-1" />
-                Отправлено
-              </Badge>
+    <div style={{
+      background: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(20px)',
+      borderRadius: '24px',
+      padding: '32px',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+      transition: 'all 0.3s ease'
+    }}>
+      {/* НОВЫЙ HEADER */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '32px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <Avatar style={{ width: '64px', height: '64px' }}>
+            <AvatarFallback style={{
+              background: 'linear-gradient(135deg, #667eea, #764ba2)',
+              color: 'white',
+              fontSize: '20px',
+              fontWeight: '700'
+            }}>
+              {getInitials(employee.fullName)}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              color: '#1f2937',
+              margin: '0 0 8px 0'
+            }}>
+              {employee.fullName}
+            </h3>
+            {employee.department && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                color: '#6b7280'
+              }}>
+                <Building2 style={{ width: '16px', height: '16px' }} />
+                {employee.department}
+              </div>
             )}
           </div>
         </div>
-      </CardHeader>
-
-      <CardContent className="space-y-8">
-        {/* Problems Alert */}
-        {problems.length > 0 && (
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-red-500" />
-              Проблемы с документами
-            </h4>
-            <div className="space-y-2">
-              {problems.map((problem, index) => (
-                <div
-                  key={index}
-                  className={`p-4 rounded-xl border text-sm font-medium ${getStatusClasses(problem.status)}`}
-                >
-                  {problem.message}
-                </div>
-              ))}
-            </div>
-          </div>
+        
+        {employee.sent && (
+          <Badge style={{
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '8px 16px',
+            fontSize: '12px',
+            fontWeight: '600'
+          }}>
+            <Check style={{ width: '12px', height: '12px', marginRight: '4px' }} />
+            Отправлено
+          </Badge>
         )}
+      </div>
 
-        {/* Document Dates */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-500" />
-            Даты документов
+      {/* ПРОБЛЕМЫ */}
+      {problems.length > 0 && (
+        <div style={{
+          background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
+          borderRadius: '20px',
+          padding: '24px',
+          marginBottom: '32px',
+          border: '1px solid #fecaca'
+        }}>
+          <h4 style={{
+            fontSize: '16px',
+            fontWeight: '700',
+            color: '#991b1b',
+            margin: '0 0 16px 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <Calendar style={{ width: '16px', height: '16px' }} />
+            Требует внимания
           </h4>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {documentFields.map(({ key, label, date }) => {
-              const status = getDocumentStatus(date)
-              return (
-                <div key={key} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {label}
-                    </span>
-                    <DateEditor
-                      field={key}
-                      date={date}
-                      onUpdate={(newDate) => {
-                        // Handle date update
-                        fetch(`/api/employees/${employee.id}`, {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ [key]: newDate?.toISOString() })
-                        }).then(res => res.json()).then(onUpdate)
-                      }}
-                    />
-                  </div>
-                  <div className={`p-3 rounded-xl border text-center text-sm font-medium ${getStatusClasses(status)}`}>
-                    {date ? formatDate(date) : 'Не указано'}
-                  </div>
-                </div>
-              )
-            })}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {problems.map((problem, index) => (
+              <div key={index} style={{
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#991b1b'
+              }}>
+                • {problem.message}
+              </div>
+            ))}
           </div>
         </div>
+      )}
 
-        {/* Comment */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-gray-500" />
-              Комментарий
-            </h4>
-            <CommentEditor
-              comment={employee.comment || ''}
-              onUpdate={(comment) => {
-                fetch(`/api/employees/${employee.id}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ comment })
-                }).then(res => res.json()).then(onUpdate)
+      {/* ДАТЫ ДОКУМЕНТОВ */}
+      <div style={{ marginBottom: '32px' }}>
+        <h4 style={{
+          fontSize: '16px',
+          fontWeight: '600',
+          color: '#1f2937',
+          margin: '0 0 20px 0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <Calendar style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+          Документы
+        </h4>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '16px'
+        }}>
+          {documentFields.map(({ key, label, date }) => (
+            <div
+              key={key}
+              style={{
+                ...getStatusStyle(date),
+                borderRadius: '16px',
+                padding: '20px',
+                textAlign: 'center',
+                transition: 'all 0.2s ease'
               }}
-            />
-          </div>
-          {employee.comment && (
-            <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                {employee.comment}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Contact */}
-        {employee.phone && (
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-              <Phone className="h-4 w-4 text-gray-500" />
-              Контакт
-            </h4>
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl">
-              <p className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                {formatPhone(employee.phone)}
-              </p>
-            </div>
-          </div>
-        )}
-
-        <Separator />
-
-        {/* Actions */}
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-3">
-            {hasValidPhone && whatsappMessage && (
-              <>
-                <Button 
-                  size="sm"
-                  onClick={() => window.open(generateWhatsAppLink(employee.phone!, whatsappMessage), '_blank')}
-                  className="flex-1 sm:flex-none gap-2"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  WhatsApp
-                </Button>
-                
-                <Button 
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => window.open(generateTelegramLink(employee.phone!), '_blank')}
-                  className="flex-1 sm:flex-none gap-2"
-                >
-                  <Send className="h-4 w-4" />
-                  Telegram
-                </Button>
-                
-                <Button 
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => window.open(generateCallLink(employee.phone!), '_blank')}
-                  className="flex-1 sm:flex-none gap-2"
-                >
-                  <Phone className="h-4 w-4" />
-                  Позвонить
-                </Button>
-              </>
-            )}
-          </div>
-          
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowDocuments(!showDocuments)}
-              className="flex-1 gap-2"
             >
-              <FileText className="h-4 w-4" />
-              {showDocuments ? 'Скрыть документы' : 'Управление документами'}
-              <ChevronRight className={`h-4 w-4 ml-auto transition-transform ${showDocuments ? 'rotate-90' : ''}`} />
+              <p style={{
+                fontSize: '12px',
+                fontWeight: '600',
+                margin: '0 0 8px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                opacity: 0.8
+              }}>
+                {label}
+              </p>
+              <p style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                margin: 0
+              }}>
+                {date ? formatDate(date) : 'Не указано'}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* КОНТАКТ */}
+      {employee.phone && (
+        <div style={{
+          background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
+          borderRadius: '20px',
+          padding: '24px',
+          marginBottom: '32px',
+          border: '1px solid #bfdbfe'
+        }}>
+          <h4 style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#1e40af',
+            margin: '0 0 12px 0',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
+          }}>
+            Контакт
+          </h4>
+          <p style={{
+            fontSize: '20px',
+            fontWeight: '700',
+            color: '#1e3a8a',
+            margin: 0
+          }}>
+            {formatPhone(employee.phone)}
+          </p>
+        </div>
+      )}
+
+      {/* КОММЕНТАРИЙ */}
+      {employee.comment && (
+        <div style={{
+          background: '#f9fafb',
+          borderRadius: '16px',
+          padding: '20px',
+          marginBottom: '32px',
+          border: '1px solid #e5e7eb'
+        }}>
+          <h4 style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#374151',
+            margin: '0 0 12px 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <MessageSquare style={{ width: '14px', height: '14px' }} />
+            Комментарий
+          </h4>
+          <p style={{
+            fontSize: '14px',
+            color: '#6b7280',
+            margin: 0,
+            lineHeight: '1.5'
+          }}>
+            {employee.comment}
+          </p>
+        </div>
+      )}
+
+      {/* ДЕЙСТВИЯ */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Кнопки связи */}
+        {hasValidPhone && whatsappMessage && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: '12px'
+          }}>
+            <Button 
+              onClick={() => window.open(generateWhatsAppLink(employee.phone!, whatsappMessage), '_blank')}
+              style={{
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                color: 'white',
+                borderRadius: '16px',
+                padding: '16px 20px',
+                fontSize: '14px',
+                fontWeight: '600',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <MessageCircle style={{ width: '16px', height: '16px' }} />
+              WhatsApp
             </Button>
             
-            <Button
-              size="sm"
-              variant={employee.sent ? "destructive" : "default"}
-              onClick={handleStatusToggle}
-              disabled={isUpdating}
-              className="gap-2"
+            <Button 
+              onClick={() => window.open(generateTelegramLink(employee.phone!), '_blank')}
+              style={{
+                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                color: 'white',
+                borderRadius: '16px',
+                padding: '16px 20px',
+                fontSize: '14px',
+                fontWeight: '600',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
             >
-              {isUpdating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : employee.sent ? (
-                <X className="h-4 w-4" />
-              ) : (
-                <Check className="h-4 w-4" />
-              )}
-              {employee.sent ? 'Отменить' : 'Отправлено'}
+              <Send style={{ width: '16px', height: '16px' }} />
+              Telegram
+            </Button>
+            
+            <Button 
+              onClick={() => window.open(generateCallLink(employee.phone!), '_blank')}
+              style={{
+                background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                color: 'white',
+                borderRadius: '16px',
+                padding: '16px 20px',
+                fontSize: '14px',
+                fontWeight: '600',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <Phone style={{ width: '16px', height: '16px' }} />
+              Позвонить
             </Button>
           </div>
-        </div>
-
-        {/* Documents Section */}
-        {showDocuments && (
-          <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
-            <DocumentManager employeeId={employee.id} />
-          </div>
         )}
-      </CardContent>
-    </Card>
+        
+        {/* Управление */}
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <Button
+            onClick={() => setShowDocuments(!showDocuments)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.8)',
+              color: '#374151',
+              border: '1px solid #e5e7eb',
+              borderRadius: '16px',
+              padding: '16px 20px',
+              fontSize: '14px',
+              fontWeight: '600',
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            <FileText style={{ width: '16px', height: '16px' }} />
+            {showDocuments ? 'Скрыть документы' : 'Документы'}
+            <ChevronRight style={{
+              width: '16px',
+              height: '16px',
+              transform: showDocuments ? 'rotate(90deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease'
+            }} />
+          </Button>
+          
+          <Button
+            onClick={handleStatusToggle}
+            disabled={isUpdating}
+            style={{
+              background: employee.sent 
+                ? 'linear-gradient(135deg, #ef4444, #dc2626)' 
+                : 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white',
+              borderRadius: '16px',
+              padding: '16px 20px',
+              fontSize: '14px',
+              fontWeight: '600',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              opacity: isUpdating ? 0.7 : 1
+            }}
+          >
+            {isUpdating ? (
+              <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
+            ) : employee.sent ? (
+              <X style={{ width: '16px', height: '16px' }} />
+            ) : (
+              <Check style={{ width: '16px', height: '16px' }} />
+            )}
+            {employee.sent ? 'Отменить' : 'Отправлено'}
+          </Button>
+        </div>
+      </div>
+
+      {/* ДОКУМЕНТЫ */}
+      {showDocuments && (
+        <div style={{
+          marginTop: '32px',
+          paddingTop: '32px',
+          borderTop: '1px solid #e5e7eb'
+        }}>
+          <DocumentManager employeeId={employee.id} />
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
   )
 }

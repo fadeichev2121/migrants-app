@@ -15,59 +15,113 @@ export default function HomePage() {
   const [showOnlyUrgent, setShowOnlyUrgent] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Clean Header */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-6xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+    <>
+      {/* КАРДИНАЛЬНО НОВЫЙ ДИЗАЙН */}
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
+      }}>
+        {/* Современный Header */}
+        <header style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          padding: '24px 0'
+        }}>
+          <div style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '0 32px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+              <h1 style={{
+                fontSize: '32px',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: '0 0 8px 0'
+              }}>
                 Монитор мигрантов
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Управление документами и уведомлениями
+              <p style={{
+                fontSize: '16px',
+                color: '#6b7280',
+                margin: 0
+              }}>
+                Современная система управления документами
               </p>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                background: 'rgba(255, 255, 255, 0.8)',
+                padding: '12px 20px',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.3)'
+              }}>
+                <Switch
+                  id="urgent-filter"
+                  checked={showOnlyUrgent}
+                  onCheckedChange={setShowOnlyUrgent}
+                />
+                <Label htmlFor="urgent-filter" style={{ fontSize: '14px', fontWeight: '500' }}>
+                  Только срочные
+                </Label>
+              </div>
+              
               <ThemeToggle />
+              
               <Button
+                onClick={() => router.push('/settings')}
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push('/settings')}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  borderRadius: '12px',
+                  padding: '12px'
+                }}
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-5 w-5" />
               </Button>
-              <Button onClick={() => router.push('/employees/new')}>
-                <Plus className="h-4 w-4 mr-2" />
+              
+              <Button
+                onClick={() => router.push('/employees/new')}
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '16px',
+                  padding: '16px 24px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4)',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <Plus className="h-5 w-5 mr-2" />
                 Добавить сотрудника
               </Button>
             </div>
           </div>
-          
-          {/* Filters */}
-          <div className="mt-8 flex items-center space-x-6">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="urgent-filter"
-                checked={showOnlyUrgent}
-                onCheckedChange={setShowOnlyUrgent}
-              />
-              <Label htmlFor="urgent-filter" className="text-sm font-medium">
-                Только срочные
-              </Label>
-            </div>
-          </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6 py-12">
-        <EmployeeList showOnlyUrgent={showOnlyUrgent} />
-      </main>
+        {/* Main Content */}
+        <main style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '48px 32px'
+        }}>
+          <EmployeeList showOnlyUrgent={showOnlyUrgent} />
+        </main>
 
-      {/* PWA Installer */}
-      <PWAInstaller />
-    </div>
+        <PWAInstaller />
+      </div>
+    </>
   )
 }

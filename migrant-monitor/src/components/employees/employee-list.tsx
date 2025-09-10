@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import EmployeeCard from './employee-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { 
   Users, 
@@ -14,8 +13,7 @@ import {
   CheckCircle, 
   Coffee,
   Plus,
-  TrendingUp,
-  Clock
+  TrendingUp
 } from 'lucide-react'
 
 interface Employee {
@@ -80,166 +78,321 @@ export default function EmployeeList({ showOnlyUrgent }: EmployeeListProps) {
   const activeEmployees = employees.filter(emp => !emp.sent)
   const sentEmployees = employees.filter(emp => emp.sent)
 
-  // Loading State
   if (loading) {
     return (
-      <div className="space-y-12">
-        {/* Stats Cards Skeleton */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="p-8">
-              <div className="space-y-4">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-10 w-20" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            </Card>
-          ))}
-        </div>
-        
-        {/* List Skeleton */}
-        <div className="space-y-6">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="p-8">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <Skeleton className="h-12 w-12 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-5 w-48" />
-                    <Skeleton className="h-4 w-32" />
-                  </div>
-                </div>
-                <Skeleton className="h-20 w-full" />
-              </div>
-            </Card>
-          ))}
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid #f3f4f6',
+          borderTop: '4px solid #667eea',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }}></div>
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     )
   }
 
   return (
-    <div className="space-y-12">
-      {/* Clean Stats Cards */}
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
-              <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
+      {/* НОВЫЕ СТАТИСТИЧЕСКИЕ КАРТЫ */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '32px'
+      }}>
+        {/* Всего сотрудников */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          padding: '32px',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s ease'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+              borderRadius: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Users style={{ width: '32px', height: '32px', color: 'white' }} />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#6b7280',
+                margin: '0 0 8px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
                 Всего сотрудников
               </p>
-              <p className="text-3xl font-semibold text-gray-900 dark:text-white">
+              <p style={{
+                fontSize: '36px',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: 0
+              }}>
                 {employees.length}
               </p>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-2xl">
-              <AlertTriangle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+        {/* Требуют внимания */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          padding: '32px',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s ease'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              borderRadius: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <AlertTriangle style={{ width: '32px', height: '32px', color: 'white' }} />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#6b7280',
+                margin: '0 0 8px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
                 Требуют внимания
               </p>
-              <p className="text-3xl font-semibold text-gray-900 dark:text-white">
+              <p style={{
+                fontSize: '36px',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: 0
+              }}>
                 {activeEmployees.length}
               </p>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
-              <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+        {/* Отправлены */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          padding: '32px',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s ease'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              borderRadius: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <CheckCircle style={{ width: '32px', height: '32px', color: 'white' }} />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#6b7280',
+                margin: '0 0 8px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
                 Уведомления отправлены
               </p>
-              <p className="text-3xl font-semibold text-gray-900 dark:text-white">
+              <p style={{
+                fontSize: '36px',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: 0
+              }}>
                 {sentEmployees.length}
               </p>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Clean Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'active' | 'sent')}>
-        <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800">
-          <TabsTrigger value="active" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Активные ({activeEmployees.length})
-          </TabsTrigger>
-          <TabsTrigger value="sent" className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
-            Отправленные ({sentEmployees.length})
-          </TabsTrigger>
-        </TabsList>
+      {/* НОВЫЕ ТАБЫ */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
+        borderRadius: '24px',
+        padding: '8px',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+      }}>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'active' | 'sent')}>
+          <TabsList style={{
+            background: 'transparent',
+            border: 'none',
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '8px'
+          }}>
+            <TabsTrigger 
+              value="active"
+              style={{
+                background: activeTab === 'active' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'transparent',
+                color: activeTab === 'active' ? 'white' : '#6b7280',
+                borderRadius: '16px',
+                padding: '16px 24px',
+                fontWeight: '600',
+                border: 'none',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              Активные ({activeEmployees.length})
+            </TabsTrigger>
+            <TabsTrigger 
+              value="sent"
+              style={{
+                background: activeTab === 'sent' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
+                color: activeTab === 'sent' ? 'white' : '#6b7280',
+                borderRadius: '16px',
+                padding: '16px 24px',
+                fontWeight: '600',
+                border: 'none',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <CheckCircle className="h-5 w-5 mr-2" />
+              Отправленные ({sentEmployees.length})
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="active" className="space-y-6 mt-8">
-          {activeEmployees.length === 0 ? (
-            <Card className="p-16">
-              <CardContent className="text-center space-y-4">
-                <Coffee className="h-16 w-16 text-gray-400 mx-auto" />
-                <CardTitle className="text-xl text-gray-900 dark:text-white">
-                  Всё под контролем!
-                </CardTitle>
-                <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-                  Нет сотрудников с проблемными документами. Все документы в порядке.
+          <TabsContent value="active" style={{ marginTop: '32px' }}>
+            {activeEmployees.length === 0 ? (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: '24px',
+                padding: '64px 32px',
+                textAlign: 'center',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+              }}>
+                <Coffee style={{ width: '64px', height: '64px', color: '#6b7280', margin: '0 auto 24px' }} />
+                <h3 style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#1f2937',
+                  margin: '0 0 16px 0'
+                }}>
+                  Всё под контролем! ✨
+                </h3>
+                <p style={{
+                  fontSize: '16px',
+                  color: '#6b7280',
+                  margin: '0 0 32px 0',
+                  maxWidth: '400px',
+                  marginLeft: 'auto',
+                  marginRight: 'auto'
+                }}>
+                  Нет сотрудников с проблемными документами
                 </p>
-                <Button onClick={() => router.push('/employees/new')} className="mt-6">
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button 
+                  onClick={() => router.push('/employees/new')}
+                  style={{
+                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                    color: 'white',
+                    borderRadius: '16px',
+                    padding: '16px 32px',
+                    fontSize: '16px',
+                    fontWeight: '600'
+                  }}
+                >
+                  <Plus className="h-5 w-5 mr-2" />
                   Добавить сотрудника
                 </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {activeEmployees.map((employee) => (
-                <EmployeeCard
-                  key={employee.id}
-                  employee={employee}
-                  onUpdate={handleEmployeeUpdate}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {activeEmployees.map((employee) => (
+                  <EmployeeCard
+                    key={employee.id}
+                    employee={employee}
+                    onUpdate={handleEmployeeUpdate}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
-        <TabsContent value="sent" className="space-y-6 mt-8">
-          {sentEmployees.length === 0 ? (
-            <Card className="p-16">
-              <CardContent className="text-center space-y-4">
-                <Send className="h-16 w-16 text-gray-400 mx-auto" />
-                <CardTitle className="text-xl text-gray-900 dark:text-white">
-                  Готовы к отправке
-                </CardTitle>
-                <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+          <TabsContent value="sent" style={{ marginTop: '32px' }}>
+            {sentEmployees.length === 0 ? (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: '24px',
+                padding: '64px 32px',
+                textAlign: 'center',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+              }}>
+                <Send style={{ width: '64px', height: '64px', color: '#6b7280', margin: '0 auto 24px' }} />
+                <h3 style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: '#1f2937',
+                  margin: '0 0 16px 0'
+                }}>
+                  Готовы к отправке 🚀
+                </h3>
+                <p style={{
+                  fontSize: '16px',
+                  color: '#6b7280',
+                  margin: 0
+                }}>
                   Сотрудники с отправленными уведомлениями появятся здесь
                 </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {sentEmployees.map((employee) => (
-                <EmployeeCard
-                  key={employee.id}
-                  employee={employee}
-                  onUpdate={handleEmployeeUpdate}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {sentEmployees.map((employee) => (
+                  <EmployeeCard
+                    key={employee.id}
+                    employee={employee}
+                    onUpdate={handleEmployeeUpdate}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }
