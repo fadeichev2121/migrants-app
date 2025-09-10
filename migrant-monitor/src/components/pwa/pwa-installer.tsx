@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Download, X, Smartphone, Wifi, Zap, Loader2 } from 'lucide-react'
+import { Download, X, Smartphone, Wifi, Zap, Loader2, Sparkles, Rocket } from 'lucide-react'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
@@ -69,68 +68,226 @@ export default function PWAInstaller() {
   if (!showInstallPrompt) return null
 
   return (
-    <div className="fixed bottom-6 left-6 right-6 z-50 max-w-sm mx-auto">
-      <Card className="shadow-lg border-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur">
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-xl">
-                <Smartphone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <CardTitle className="text-base">Установить приложение</CardTitle>
-                <CardDescription className="text-sm">
-                  Быстрый доступ с домашнего экрана
-                </CardDescription>
-              </div>
-            </div>
-            <Button 
-              size="sm" 
-              variant="ghost" 
-              onClick={handleDismiss}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Features */}
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="space-y-2">
-              <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg mx-auto w-fit">
-                <Wifi className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-              </div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Офлайн</p>
-            </div>
-            <div className="space-y-2">
-              <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg mx-auto w-fit">
-                <Zap className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-              </div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Быстро</p>
-            </div>
-            <div className="space-y-2">
-              <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg mx-auto w-fit">
-                <Smartphone className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-              </div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Удобно</p>
-            </div>
-          </div>
+    <div style={{
+      position: 'fixed',
+      bottom: '24px',
+      left: '24px',
+      right: '24px',
+      zIndex: 50,
+      maxWidth: '400px',
+      margin: '0 auto'
+    }}>
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.98)',
+        backdropFilter: 'blur(20px)',
+        borderRadius: '24px',
+        padding: '32px',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 20px 64px rgba(0, 0, 0, 0.15)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Animated background */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '4px',
+          background: 'linear-gradient(90deg, #667eea, #764ba2, #667eea)',
+          backgroundSize: '200% 100%',
+          animation: 'gradient-move 3s ease infinite'
+        }}></div>
 
-          <Button
-            onClick={handleInstallClick}
-            disabled={isInstalling}
-            className="w-full gap-2"
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          marginBottom: '24px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              background: 'linear-gradient(135deg, #667eea, #764ba2)',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative'
+            }}>
+              <Smartphone style={{ width: '28px', height: '28px', color: 'white' }} />
+              <Sparkles style={{
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                width: '16px',
+                height: '16px',
+                color: '#fbbf24'
+              }} />
+            </div>
+            <div>
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: '0 0 4px 0'
+              }}>
+                Установить приложение
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                margin: 0
+              }}>
+                Премиум опыт на вашем устройстве
+              </p>
+            </div>
+          </div>
+          
+          <Button 
+            onClick={handleDismiss}
+            style={{
+              background: 'rgba(107, 114, 128, 0.1)',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '8px',
+              cursor: 'pointer'
+            }}
           >
-            {isInstalling ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4" />
-            )}
-            {isInstalling ? 'Установка...' : 'Установить'}
+            <X style={{ width: '16px', height: '16px', color: '#6b7280' }} />
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Features */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '16px',
+          marginBottom: '24px'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 12px'
+            }}>
+              <Wifi style={{ width: '24px', height: '24px', color: 'white' }} />
+            </div>
+            <p style={{
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#1f2937',
+              margin: 0
+            }}>
+              Работает офлайн
+            </p>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 12px'
+            }}>
+              <Zap style={{ width: '24px', height: '24px', color: 'white' }} />
+            </div>
+            <p style={{
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#1f2937',
+              margin: 0
+            }}>
+              Молниеносно
+            </p>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 12px'
+            }}>
+              <Rocket style={{ width: '24px', height: '24px', color: 'white' }} />
+            </div>
+            <p style={{
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#1f2937',
+              margin: 0
+            }}>
+              Как нативное
+            </p>
+          </div>
+        </div>
+
+        {/* Install Button */}
+        <Button
+          onClick={handleInstallClick}
+          disabled={isInstalling}
+          style={{
+            background: isInstalling 
+              ? '#9ca3af' 
+              : 'linear-gradient(135deg, #667eea, #764ba2)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '16px',
+            padding: '20px',
+            fontSize: '18px',
+            fontWeight: '700',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            cursor: isInstalling ? 'not-allowed' : 'pointer',
+            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4)'
+          }}
+        >
+          {isInstalling ? (
+            <Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} />
+          ) : (
+            <Download style={{ width: '20px', height: '20px' }} />
+          )}
+          {isInstalling ? 'Установка...' : 'Установить сейчас'}
+          {!isInstalling && <Sparkles style={{ width: '16px', height: '16px' }} />}
+        </Button>
+        
+        <p style={{
+          fontSize: '12px',
+          color: '#6b7280',
+          textAlign: 'center',
+          margin: '16px 0 0 0'
+        }}>
+          ✨ Будет добавлено на домашний экран
+        </p>
+
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes gradient-move {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+        `}</style>
+      </div>
     </div>
   )
 }

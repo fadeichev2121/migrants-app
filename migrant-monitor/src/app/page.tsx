@@ -29,14 +29,16 @@ export default function HomePage() {
           borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
           padding: '24px 0'
         }}>
-          <div style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '0 32px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
+        <div className="mobile-container" style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 32px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '16px'
+        }}>
             <div>
               <h1 style={{
                 fontSize: '32px',
@@ -55,7 +57,12 @@ export default function HomePage() {
               </p>
             </div>
             
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <div style={{ 
+              display: 'flex', 
+              gap: '16px', 
+              alignItems: 'center',
+              flexWrap: 'wrap'
+            }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -112,7 +119,7 @@ export default function HomePage() {
         </header>
 
         {/* Main Content */}
-        <main style={{
+        <main className="mobile-container" style={{
           maxWidth: '1200px',
           margin: '0 auto',
           padding: '48px 32px'

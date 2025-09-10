@@ -344,13 +344,14 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {/* Кнопки связи */}
         {hasValidPhone && whatsappMessage && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-            gap: '12px'
-          }}>
+        <div className="mobile-grid-1 mobile-gap-4" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: '12px'
+        }}>
             <Button 
               onClick={() => window.open(generateWhatsAppLink(employee.phone!, whatsappMessage), '_blank')}
+              className="touch-target"
               style={{
                 background: 'linear-gradient(135deg, #10b981, #059669)',
                 color: 'white',
@@ -362,7 +363,8 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                minHeight: '48px'
               }}
             >
               <MessageCircle style={{ width: '16px', height: '16px' }} />
@@ -371,6 +373,7 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
             
             <Button 
               onClick={() => window.open(generateTelegramLink(employee.phone!), '_blank')}
+              className="touch-target"
               style={{
                 background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
                 color: 'white',
@@ -382,7 +385,8 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                minHeight: '48px'
               }}
             >
               <Send style={{ width: '16px', height: '16px' }} />
@@ -391,6 +395,7 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
             
             <Button 
               onClick={() => window.open(generateCallLink(employee.phone!), '_blank')}
+              className="touch-target"
               style={{
                 background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
                 color: 'white',
@@ -402,7 +407,8 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                minHeight: '48px'
               }}
             >
               <Phone style={{ width: '16px', height: '16px' }} />

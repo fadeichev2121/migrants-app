@@ -92,3 +92,44 @@
     color: hsl(var(--status-success));
   }
 }
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .mobile-container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  
+  .mobile-header {
+    padding: 16px 0 !important;
+  }
+  
+  .mobile-card {
+    padding: 24px !important;
+    border-radius: 20px !important;
+  }
+  
+  .mobile-text-lg {
+    font-size: 20px !important;
+  }
+  
+  .mobile-text-xl {
+    font-size: 24px !important;
+  }
+  
+  .mobile-grid-1 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .mobile-gap-4 {
+    gap: 16px !important;
+  }
+}
+
+/* Touch improvements */
+@media (hover: none) and (pointer: coarse) {
+  .touch-target {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+}
