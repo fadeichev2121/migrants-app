@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Status } from '@prisma/client'
+import { useState, useEffect } from 'react'
+// Убираем неиспользуемый импорт Status
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,34 +15,32 @@ import {
   Clock,
   AlertCircle,
   CheckCircle2,
-  Zap
+  Zap,
+  Paperclip
 } from 'lucide-react'
 import { 
   formatPhone, 
   generateWhatsAppLink, 
   generateTelegramLink, 
   generateCallLink,
-  getEmployeeProblems,
-  generateWhatsAppMessage,
-  isDateExpired,
-  isDateExpiringSoon,
   normalizePhone
 } from '@/lib/utils'
+import { 
+  calculateEmployeeProblems,
+  generateWhatsAppMessage,
+  type UrgencySettings,
+  type EmployeeUrgencyData
+} from '@/lib/urgency'
 import DateEditor from './date-editor'
 import CommentEditor from './comment-editor'
+import DocumentManager from './document-manager'
 
-interface Employee {
-  id: string
+interface Employee extends EmployeeUrgencyData {
   number: number | null
-  fullName: string
   phone: string | null
   department: string | null
-  patentDate: Date | null
-  registrationDate: Date | null
-  passportDate: Date | null
-  checkDate: Date | null
   comment: string | null
-  status: Status
+  sent: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -54,20 +52,41 @@ interface EmployeeCardProps {
 
 export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) {
   const [isUpdating, setIsUpdating] = useState(false)
+  const [settings, setSettings] = useState<UrgencySettings | null>(null)
+  const [showDocuments, setShowDocuments] = useState(false)
   
-  const problems = getEmployeeProblems(employee)
+  useEffect(() => {
+    fetchSettings()
+  }, [])
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/settings')
+      if (response.ok) {
+        const data = await response.json()
+        setSettings({
+          urgentDaysDefault: data.urgentDaysDefault,
+          warnDaysDefault: data.warnDaysDefault,
+          whatsappTemplate: data.whatsappTemplate,
+          perFieldOverrides: data.perFieldOverrides || {}
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error)
+    }
+  }
+
+  const problems = settings ? calculateEmployeeProblems(employee, settings) : []
   const hasValidPhone = employee.phone && normalizePhone(employee.phone).length >= 10
-  const whatsappMessage = generateWhatsAppMessage(employee)
+  const whatsappMessage = settings ? generateWhatsAppMessage(employee, settings) : ''
 
   const handleStatusToggle = async () => {
     setIsUpdating(true)
     try {
-      const newStatus = employee.status === Status.ACTIVE ? Status.SENT : Status.ACTIVE
-      
       const response = await fetch(`/api/employees/${employee.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ sent: !employee.sent })
       })
 
       if (response.ok) {
@@ -115,29 +134,40 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
     }
   }
 
-  const getDateStatus = (date: Date | null) => {
-    if (!date) return 'normal'
-    if (isDateExpired(date)) return 'expired'
-    if (isDateExpiringSoon(date)) return 'expiring'
-    return 'normal'
-  }
-
-  const getDateClassName = (status: string) => {
-    switch (status) {
+  const getDateStatusClass = (field: 'patent' | 'registration' | 'passport' | 'check', date: Date | null) => {
+    if (!settings || !date) return 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600'
+    
+    const problem = calculateEmployeeProblems({ ...employee, [field + 'Date']: date }, settings)
+      .find(p => p.field === field)
+    
+    if (!problem) return 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600'
+    
+    switch (problem.status) {
       case 'expired':
         return 'bg-gradient-to-br from-red-50 to-red-100 text-red-800 border-red-200 dark:from-red-900/30 dark:to-red-800/30 dark:text-red-200 dark:border-red-700/50'
-      case 'expiring':
+      case 'urgent':
+        return 'bg-gradient-to-br from-orange-50 to-red-100 text-orange-800 border-orange-200 dark:from-orange-900/30 dark:to-red-800/30 dark:text-orange-200 dark:border-orange-700/50'
+      case 'warning':
         return 'bg-gradient-to-br from-amber-50 to-yellow-100 text-amber-800 border-amber-200 dark:from-amber-900/30 dark:to-yellow-800/30 dark:text-amber-200 dark:border-amber-700/50'
       default:
-        return 'bg-gradient-to-br from-gray-50 to-gray-100 text-gray-700 border-gray-200 dark:from-gray-800/50 dark:to-gray-700/50 dark:text-gray-300 dark:border-gray-600/50'
+        return 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600'
     }
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
+  const getStatusIcon = (field: 'patent' | 'registration' | 'passport' | 'check', date: Date | null) => {
+    if (!settings || !date) return <CheckCircle2 className="w-3 h-3 text-gray-500" />
+    
+    const problem = calculateEmployeeProblems({ ...employee, [field + 'Date']: date }, settings)
+      .find(p => p.field === field)
+    
+    if (!problem) return <CheckCircle2 className="w-3 h-3 text-green-500" />
+    
+    switch (problem.status) {
       case 'expired':
         return <AlertCircle className="w-3 h-3 text-red-500" />
-      case 'expiring':
+      case 'urgent':
+        return <AlertCircle className="w-3 h-3 text-orange-500" />
+      case 'warning':
         return <Clock className="w-3 h-3 text-amber-500" />
       default:
         return <CheckCircle2 className="w-3 h-3 text-green-500" />
@@ -145,9 +175,7 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
   }
 
   return (
-    <Card 
-      className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-white/20 dark:border-gray-700/50 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-    >
+    <Card className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-white/20 dark:border-gray-700/50 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 dark:from-blue-400/5 dark:to-indigo-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       
@@ -172,7 +200,7 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
           </div>
           
           <div className="flex items-center gap-2">
-            {employee.status === Status.SENT && (
+            {employee.sent && (
               <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 shadow-lg shadow-emerald-500/25">
                 <Check className="w-3 h-3 mr-1" />
                 Отправлено
@@ -191,7 +219,7 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
               <div className="space-y-2">
                 {problems.map((problem, index) => (
                   <div key={index} className="text-red-800 dark:text-red-200 text-sm font-medium">
-                    {problem}
+                    {problem.message}
                   </div>
                 ))}
               </div>
@@ -205,32 +233,32 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
             label="Патент"
             date={employee.patentDate}
             onUpdate={(date) => handleDateUpdate('patentDate', date)}
-            className={getDateClassName(getDateStatus(employee.patentDate))}
-            icon={getStatusIcon(getDateStatus(employee.patentDate))}
+            className={getDateStatusClass('patent', employee.patentDate)}
+            icon={getStatusIcon('patent', employee.patentDate)}
           />
           
           <DateEditor
             label="Регистрация"
             date={employee.registrationDate}
             onUpdate={(date) => handleDateUpdate('registrationDate', date)}
-            className={getDateClassName(getDateStatus(employee.registrationDate))}
-            icon={getStatusIcon(getDateStatus(employee.registrationDate))}
+            className={getDateStatusClass('registration', employee.registrationDate)}
+            icon={getStatusIcon('registration', employee.registrationDate)}
           />
           
           <DateEditor
             label="Паспорт"
             date={employee.passportDate}
             onUpdate={(date) => handleDateUpdate('passportDate', date)}
-            className={getDateClassName(getDateStatus(employee.passportDate))}
-            icon={getStatusIcon(getDateStatus(employee.passportDate))}
+            className={getDateStatusClass('passport', employee.passportDate)}
+            icon={getStatusIcon('passport', employee.passportDate)}
           />
           
           <DateEditor
             label="Чек"
             date={employee.checkDate}
             onUpdate={(date) => handleDateUpdate('checkDate', date)}
-            className={getDateClassName(getDateStatus(employee.checkDate))}
-            icon={getStatusIcon(getDateStatus(employee.checkDate))}
+            className={getDateStatusClass('check', employee.checkDate)}
+            icon={getStatusIcon('check', employee.checkDate)}
           />
         </div>
 
@@ -240,6 +268,24 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
             comment={employee.comment || ''}
             onUpdate={handleCommentUpdate}
           />
+        </div>
+
+        {/* Documents Section */}
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={() => setShowDocuments(!showDocuments)}
+            className="w-full rounded-2xl border-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            <Paperclip className="w-4 h-4 mr-2" />
+            {showDocuments ? 'Скрыть документы' : 'Показать документы'}
+          </Button>
+          
+          {showDocuments && (
+            <div className="mt-4">
+              <DocumentManager employeeId={employee.id} />
+            </div>
+          )}
         </div>
 
         {/* Contact Info */}
@@ -259,7 +305,7 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
         
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3">
-          {hasValidPhone && (
+          {hasValidPhone && whatsappMessage && (
             <>
               <Button
                 size="sm"
@@ -296,7 +342,7 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
             onClick={handleStatusToggle}
             disabled={isUpdating}
             className={`
-              ${employee.status === Status.SENT 
+              ${employee.sent 
                 ? 'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600' 
                 : 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600'
               } 
@@ -305,12 +351,12 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
           >
             {isUpdating ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-            ) : employee.status === Status.SENT ? (
+            ) : employee.sent ? (
               <X className="w-4 h-4 mr-2" />
             ) : (
               <Zap className="w-4 h-4 mr-2" />
             )}
-            {employee.status === Status.SENT ? 'Отменить' : 'Отправлено'}
+            {employee.sent ? 'Отменить' : 'Отправлено'}
           </Button>
         </div>
       </CardContent>

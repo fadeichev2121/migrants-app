@@ -67,7 +67,8 @@ export default function NewEmployeePage() {
           registrationDate: formData.registrationDate || null,
           passportDate: formData.passportDate || null,
           checkDate: formData.checkDate || null,
-          comment: formData.comment.trim() || null
+          comment: formData.comment.trim() || null,
+          sent: false
         })
       })
 

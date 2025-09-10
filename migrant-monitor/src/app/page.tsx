@@ -6,7 +6,7 @@ import EmployeeList from '@/components/employees/employee-list'
 import PWAInstaller from '@/components/pwa/pwa-installer'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { Button } from '@/components/ui/button'
-import { Plus, Users, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { Plus, Users, AlertTriangle, CheckCircle2, Settings } from 'lucide-react'
 
 export default function HomePage() {
   const router = useRouter()
@@ -47,8 +47,16 @@ export default function HomePage() {
                 </label>
               </div>
               
-              {/* Theme Toggle */}
-              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-2 border border-white/20 dark:border-gray-700/50">
+              {/* Settings and Theme */}
+              <div className="flex items-center gap-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-2 border border-white/20 dark:border-gray-700/50">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push('/settings')}
+                  className="h-8 w-8 p-0 hover:bg-white/60 dark:hover:bg-gray-700/60"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
                 <ThemeToggle />
               </div>
               

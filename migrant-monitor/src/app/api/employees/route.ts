@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { isDateUrgent } from '@/lib/utils'
+import { hasUrgentProblems, type UrgencySettings } from '@/lib/urgency'
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,17 +23,26 @@ export async function GET(request: NextRequest) {
       ]
     })
 
+    // Получаем настройки для фильтрации
+    const settings = await prisma.settings.findUnique({ where: { id: 1 } })
+    const urgencySettings: UrgencySettings = settings ? {
+      urgentDaysDefault: settings.urgentDaysDefault,
+      warnDaysDefault: settings.warnDaysDefault,
+      whatsappTemplate: settings.whatsappTemplate,
+      perFieldOverrides: (settings.perFieldOverrides as Record<string, unknown>) || {}
+    } : {
+      urgentDaysDefault: 7,
+      warnDaysDefault: 30,
+      whatsappTemplate: 'Здравствуйте, {name}! {problems}. Пожалуйста, пришлите сканы.',
+      perFieldOverrides: {}
+    }
+
     // Фильтрация по срочности на уровне приложения
     let filteredEmployees = employees
 
     if (urgent) {
       filteredEmployees = employees.filter(employee => {
-        return (
-          isDateUrgent(employee.patentDate) ||
-          isDateUrgent(employee.registrationDate) ||
-          isDateUrgent(employee.passportDate) ||
-          isDateUrgent(employee.checkDate)
-        )
+        return hasUrgentProblems(employee, urgencySettings)
       })
     }
 

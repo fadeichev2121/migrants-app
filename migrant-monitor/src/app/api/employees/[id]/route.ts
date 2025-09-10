@@ -21,9 +21,9 @@ export async function PATCH(
     // Подготавливаем данные для обновления
     const updateData: Record<string, unknown> = {}
 
-    // Обновление статуса
-    if (body.status !== undefined) {
-      updateData.status = body.status
+    // Обновление статуса отправки
+    if (body.sent !== undefined) {
+      updateData.sent = body.sent
     }
 
     // Обновление комментария

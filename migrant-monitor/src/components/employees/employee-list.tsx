@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Status } from '@prisma/client'
+// Убираем импорт Status, используем boolean sent
 import EmployeeCard from './employee-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Users, Send, Sparkles, Coffee } from 'lucide-react'
@@ -17,7 +17,7 @@ interface Employee {
   passportDate: Date | null
   checkDate: Date | null
   comment: string | null
-  status: Status
+  sent: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -66,8 +66,8 @@ export default function EmployeeList({ showOnlyUrgent }: EmployeeListProps) {
     )
   }
 
-  const activeEmployees = employees.filter(emp => emp.status === Status.ACTIVE)
-  const sentEmployees = employees.filter(emp => emp.status === Status.SENT)
+  const activeEmployees = employees.filter(emp => !emp.sent)
+  const sentEmployees = employees.filter(emp => emp.sent)
 
   if (loading) {
     return (
