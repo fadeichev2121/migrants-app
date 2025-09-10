@@ -3,11 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { DocumentType } from '@prisma/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { 
   Upload, 
@@ -16,10 +14,9 @@ import {
   File, 
   FileImage, 
   FileText,
-  Loader2,
   Eye,
-  AlertCircle,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 
@@ -42,22 +39,17 @@ export default function DocumentManager({ employeeId }: DocumentManagerProps) {
   const [documents, setDocuments] = useState<Document[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const fetchDocuments = useCallback(async () => {
     try {
       setIsLoading(true)
-      setError(null)
       const response = await fetch(`/api/employees/${employeeId}/documents`)
       if (response.ok) {
         const data = await response.json()
         setDocuments(data)
-      } else {
-        throw new Error('Failed to fetch documents')
       }
     } catch (error) {
       console.error('Error fetching documents:', error)
-      setError('Ошибка загрузки документов')
     } finally {
       setIsLoading(false)
     }
@@ -71,7 +63,6 @@ export default function DocumentManager({ employeeId }: DocumentManagerProps) {
     if (acceptedFiles.length === 0) return
 
     setIsUploading(true)
-    setError(null)
     
     for (const file of acceptedFiles) {
       try {
@@ -86,13 +77,9 @@ export default function DocumentManager({ employeeId }: DocumentManagerProps) {
 
         if (response.ok) {
           await fetchDocuments()
-        } else {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Upload failed')
         }
       } catch (error) {
         console.error('Upload error:', error)
-        setError(`Ошибка загрузки ${file.name}`)
       }
     }
     
@@ -100,8 +87,6 @@ export default function DocumentManager({ employeeId }: DocumentManagerProps) {
   }, [employeeId, fetchDocuments])
 
   const handleDelete = async (document: Document) => {
-    if (!confirm(`Удалить документ "${document.fileName}"?`)) return
-
     try {
       const response = await fetch(`/api/employees/${employeeId}/documents/${document.id}`, {
         method: 'DELETE'
@@ -109,12 +94,9 @@ export default function DocumentManager({ employeeId }: DocumentManagerProps) {
 
       if (response.ok) {
         await fetchDocuments()
-      } else {
-        setError('Ошибка удаления документа')
       }
     } catch (error) {
       console.error('Delete error:', error)
-      setError('Ошибка удаления документа')
     }
   }
 
@@ -129,11 +111,11 @@ export default function DocumentManager({ employeeId }: DocumentManagerProps) {
 
   const getDocumentIcon = (mimeType: string) => {
     if (mimeType.startsWith('image/')) {
-      return <FileImage className="h-4 w-4 text-blue-500" />
+      return <FileImage className="h-5 w-5 text-blue-500" />
     } else if (mimeType === 'application/pdf') {
-      return <FileText className="h-4 w-4 text-red-500" />
+      return <FileText className="h-5 w-5 text-red-500" />
     }
-    return <File className="h-4 w-4 text-muted-foreground" />
+    return <File className="h-5 w-5 text-gray-500" />
   }
 
   const formatFileSize = (bytes: number) => {
@@ -171,26 +153,26 @@ export default function DocumentManager({ employeeId }: DocumentManagerProps) {
       <div
         {...getRootProps()}
         className={`
-          border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
+          border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200
           ${isDragActive 
-            ? 'border-primary bg-primary/5' 
-            : 'border-muted-foreground/25 hover:border-primary hover:bg-primary/5'
+            ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/20' 
+            : 'border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/10'
           }
           ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >
         <input {...getInputProps()} />
-        <div className="flex flex-col items-center gap-2">
+        <div className="space-y-4">
           {isUploading ? (
-            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto" />
           ) : (
-            <Upload className="h-8 w-8 text-muted-foreground" />
+            <Upload className="h-12 w-12 text-gray-400 mx-auto" />
           )}
-          <div className="text-sm">
-            <p className="font-medium">
+          <div>
+            <p className="text-lg font-medium text-gray-900 dark:text-white">
               {isDragActive ? 'Отпустите файлы здесь' : 'Перетащите файлы или нажмите для выбора'}
             </p>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               JPG, PNG, WebP, PDF до 10MB
             </p>
           </div>
@@ -203,14 +185,16 @@ export default function DocumentManager({ employeeId }: DocumentManagerProps) {
     return (
       <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-4 w-48" />
+          <CardTitle>Документы</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
+          <div className="space-y-4">
+            <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
+            <div className="space-y-2">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -218,28 +202,18 @@ export default function DocumentManager({ employeeId }: DocumentManagerProps) {
   }
 
   return (
-    <Card>
+    <Card className="shadow-sm border-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <File className="h-5 w-5" />
+          <File className="h-5 w-5 text-gray-500" />
           Документы
         </CardTitle>
-        <CardDescription>
-          Загрузка и управление документами сотрудника
-        </CardDescription>
       </CardHeader>
       <CardContent>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
         <Tabs defaultValue={DocumentType.PASSPORT} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-5 bg-gray-100 dark:bg-gray-800">
             {documentTypes.map(({ value, label }) => (
-              <TabsTrigger key={value} value={value} className="text-xs">
+              <TabsTrigger key={value} value={value} className="text-xs relative">
                 {label}
                 {getDocumentsByType(value).length > 0 && (
                   <Badge variant="secondary" className="ml-1 h-4 w-4 p-0 text-xs">
@@ -251,73 +225,77 @@ export default function DocumentManager({ employeeId }: DocumentManagerProps) {
           </TabsList>
 
           {documentTypes.map(({ value, label }) => (
-            <TabsContent key={value} value={value} className="space-y-4 mt-4">
+            <TabsContent key={value} value={value} className="space-y-6 mt-6">
               <DropzoneArea type={value} />
               
               {/* Document List */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {getDocumentsByType(value).map((document) => (
-                  <Card key={document.id} className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {getDocumentIcon(document.mimeType)}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {document.fileName}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatFileSize(document.size)} • {new Date(document.uploadedAt).toLocaleDateString('ru-RU')}
-                          </p>
+                  <Card key={document.id} className="shadow-sm border border-gray-100 dark:border-gray-800">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          {getDocumentIcon(document.mimeType)}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate text-gray-900 dark:text-white">
+                              {document.fileName}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {formatFileSize(document.size)} • {new Date(document.uploadedAt).toLocaleDateString('ru-RU')}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          {document.mimeType.startsWith('image/') && (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl max-h-[90vh]">
+                                <DialogHeader>
+                                  <DialogTitle>{document.fileName}</DialogTitle>
+                                </DialogHeader>
+                                <div className="mt-4 max-h-[70vh] overflow-auto">
+                                  <img
+                                    src={`/api/employees/${employeeId}/documents/${document.id}`}
+                                    alt={document.fileName}
+                                    className="w-full h-auto rounded-xl shadow-lg"
+                                  />
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          )}
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDownload(document)}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDelete(document)}
+                            className="hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-2">
-                        {document.mimeType.startsWith('image/') && (
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button size="sm" variant="outline">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh]">
-                              <DialogHeader>
-                                <DialogTitle>{document.fileName}</DialogTitle>
-                              </DialogHeader>
-                              <div className="mt-4">
-                                <img
-                                  src={`/api/employees/${employeeId}/documents/${document.id}`}
-                                  alt={document.fileName}
-                                  className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
-                                />
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        )}
-                        
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDownload(document)}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDelete(document)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                    </CardContent>
                   </Card>
                 ))}
                 
                 {getDocumentsByType(value).length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <File className="h-8 w-8 mx-auto mb-2" />
-                    <p className="text-sm">Нет документов типа &quot;{label}&quot;</p>
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <File className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium">Нет документов</p>
+                    <p className="text-sm">Загрузите документы типа &quot;{label}&quot;</p>
                   </div>
                 )}
               </div>

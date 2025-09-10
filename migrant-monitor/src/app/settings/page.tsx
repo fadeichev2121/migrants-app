@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Settings, Save, RotateCcw, TestTube, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { UrgencySettings } from '@/lib/urgency'
@@ -84,49 +83,25 @@ export default function SettingsPage() {
     }
   }
 
-  const updateFieldOverride = (field: string, type: 'urgent' | 'warn', value: string) => {
-    if (!settings) return
-    
-    const numValue = parseInt(value) || undefined
-    const newOverrides = { ...settings.perFieldOverrides }
-    
-    if (!newOverrides[field as keyof typeof newOverrides]) {
-      newOverrides[field as keyof typeof newOverrides] = {}
-    }
-    
-    newOverrides[field as keyof typeof newOverrides]![type] = numValue
-    
-    setSettings({
-      ...settings,
-      perFieldOverrides: newOverrides
-    })
-  }
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+          <div className="max-w-6xl mx-auto px-6 py-6">
             <div className="flex items-center space-x-4">
-              <Skeleton className="h-10 w-10 rounded-lg" />
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="h-4 w-48" />
-              </div>
+              <Skeleton className="h-10 w-20" />
+              <Skeleton className="h-8 w-48" />
             </div>
           </div>
         </header>
-        <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">
-          <div className="space-y-6">
+        <main className="max-w-4xl mx-auto px-6 py-12">
+          <div className="space-y-8">
             {[1, 2, 3].map((i) => (
-              <Card key={i}>
-                <CardHeader>
+              <Card key={i} className="p-8">
+                <div className="space-y-4">
                   <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-4 w-64" />
-                </CardHeader>
-                <CardContent>
                   <Skeleton className="h-32 w-full" />
-                </CardContent>
+                </div>
               </Card>
             ))}
           </div>
@@ -137,20 +112,25 @@ export default function SettingsPage() {
 
   if (!settings) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Ошибка загрузки настроек</AlertDescription>
-        </Alert>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <Card className="p-8">
+          <CardContent className="text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <CardTitle className="text-xl mb-2">Ошибка загрузки</CardTitle>
+            <p className="text-gray-600 dark:text-gray-400">
+              Не удалось загрузить настройки
+            </p>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-6xl mx-auto px-6 py-6">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
@@ -160,38 +140,31 @@ export default function SettingsPage() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Назад
             </Button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <Settings className="h-6 w-6 text-primary-foreground" />
-            </div>
             <div>
-              <h1 className="text-xl font-semibold">Настройки</h1>
-              <p className="text-sm text-muted-foreground">Пороги срочности и шаблоны</p>
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Настройки
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                Пороги срочности и шаблоны уведомлений
+              </p>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">
+      <main className="max-w-4xl mx-auto px-6 py-12">
         <div className="space-y-8">
-          {/* Page Header */}
-          <div>
-            <h1 className="text-2xl md:text-3xl font-semibold mb-2">Настройки системы</h1>
-            <p className="text-muted-foreground mb-6">
-              Настройте пороги срочности и шаблоны уведомлений
-            </p>
-          </div>
-
           {/* General Settings */}
-          <Card>
+          <Card className="shadow-sm border-0">
             <CardHeader>
               <CardTitle>Общие пороги срочности</CardTitle>
               <CardDescription>
                 Настройки по умолчанию для всех типов документов
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <CardContent className="space-y-6">
+              <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="urgent">Срочно (дней)</Label>
                   <Input
@@ -205,9 +178,6 @@ export default function SettingsPage() {
                     min="1"
                     max="365"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Документы с истечением ≤ этого количества дней считаются срочными
-                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -223,74 +193,20 @@ export default function SettingsPage() {
                     min="1"
                     max="365"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Документы с истечением ≤ этого количества дней показываются как предупреждение
-                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Field Overrides */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Индивидуальные настройки по документам</CardTitle>
-              <CardDescription>
-                Переопределите пороги для конкретных типов документов
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {(['patent', 'registration', 'passport', 'check'] as const).map((field) => {
-                const fieldNames = {
-                  patent: 'Патент',
-                  registration: 'Регистрация',
-                  passport: 'Паспорт',
-                  check: 'Чек'
-                }
-                
-                const override = settings.perFieldOverrides?.[field] || {}
-                
-                return (
-                  <div key={field} className="space-y-4">
-                    <h4 className="font-medium">{fieldNames[field]}</h4>
-                    <div className="grid gap-4 sm:grid-cols-2 pl-4">
-                      <div className="space-y-2">
-                        <Label htmlFor={`${field}-urgent`}>Срочно (дней)</Label>
-                        <Input
-                          id={`${field}-urgent`}
-                          type="number"
-                          value={override.urgent || ''}
-                          onChange={(e) => updateFieldOverride(field, 'urgent', e.target.value)}
-                          placeholder={settings.urgentDaysDefault.toString()}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`${field}-warn`}>Предупреждение (дней)</Label>
-                        <Input
-                          id={`${field}-warn`}
-                          type="number"
-                          value={override.warn || ''}
-                          onChange={(e) => updateFieldOverride(field, 'warn', e.target.value)}
-                          placeholder={settings.warnDaysDefault.toString()}
-                        />
-                      </div>
-                    </div>
-                    {field !== 'check' && <Separator />}
-                  </div>
-                )
-              })}
-            </CardContent>
-          </Card>
-
           {/* WhatsApp Template */}
-          <Card>
+          <Card className="shadow-sm border-0">
             <CardHeader>
               <CardTitle>Шаблон сообщения WhatsApp</CardTitle>
               <CardDescription>
                 Используйте {'{name}'} для имени и {'{problems}'} для списка проблем
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="template">Шаблон сообщения</Label>
                 <Textarea
@@ -306,18 +222,18 @@ export default function SettingsPage() {
               </div>
 
               {/* Preview */}
-              <Card className="bg-muted/50">
+              <Card className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
                     <TestTube className="h-4 w-4" />
-                    Предпросмотр сообщения
+                    Предпросмотр
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm whitespace-pre-wrap">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                     {settings.whatsappTemplate
                       .replace('{name}', 'Иван Иванович')
-                      .replace('{problems}', 'Патент истекает через 3 дн. (15.10.2024), Регистрация просрочена 01.09.2024')}
+                      .replace('{problems}', 'Патент истекает 15.10.2024, Регистрация просрочена 01.09.2024')}
                   </p>
                 </CardContent>
               </Card>
@@ -351,17 +267,23 @@ export default function SettingsPage() {
 
           {/* Messages */}
           {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
+              </div>
+            </div>
           )}
 
           {success && (
-            <Alert>
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>Настройки сохранены успешно!</AlertDescription>
-            </Alert>
+            <div className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-xl">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                  Настройки сохранены успешно!
+                </p>
+              </div>
+            </div>
           )}
         </div>
       </main>

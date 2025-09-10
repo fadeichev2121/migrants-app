@@ -54,8 +54,6 @@ export default function PWAInstaller() {
 
     if (outcome === 'accepted') {
       console.log('PWA установлено')
-    } else {
-      console.log('Установка PWA отклонена')
     }
 
     setDeferredPrompt(null)
@@ -71,13 +69,13 @@ export default function PWAInstaller() {
   if (!showInstallPrompt) return null
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 max-w-sm mx-auto">
-      <Card>
+    <div className="fixed bottom-6 left-6 right-6 z-50 max-w-sm mx-auto">
+      <Card className="shadow-lg border-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur">
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <Smartphone className="h-5 w-5 text-primary-foreground" />
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-xl">
+                <Smartphone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <CardTitle className="text-base">Установить приложение</CardTitle>
@@ -100,42 +98,36 @@ export default function PWAInstaller() {
           {/* Features */}
           <div className="grid grid-cols-3 gap-3 text-center">
             <div className="space-y-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted mx-auto">
-                <Wifi className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg mx-auto w-fit">
+                <Wifi className="h-4 w-4 text-gray-600 dark:text-gray-400" />
               </div>
-              <p className="text-xs font-medium">Офлайн</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Офлайн</p>
             </div>
             <div className="space-y-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted mx-auto">
-                <Zap className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg mx-auto w-fit">
+                <Zap className="h-4 w-4 text-gray-600 dark:text-gray-400" />
               </div>
-              <p className="text-xs font-medium">Быстро</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Быстро</p>
             </div>
             <div className="space-y-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted mx-auto">
-                <Smartphone className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg mx-auto w-fit">
+                <Smartphone className="h-4 w-4 text-gray-600 dark:text-gray-400" />
               </div>
-              <p className="text-xs font-medium">Удобно</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Удобно</p>
             </div>
           </div>
 
-          {/* Install Button */}
           <Button
             onClick={handleInstallClick}
             disabled={isInstalling}
             className="w-full gap-2"
           >
             {isInstalling ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Установка...
-              </>
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <>
-                <Download className="h-4 w-4" />
-                Установить
-              </>
+              <Download className="h-4 w-4" />
             )}
+            {isInstalling ? 'Установка...' : 'Установить'}
           </Button>
         </CardContent>
       </Card>

@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { 
   Phone, 
   MessageCircle, 
@@ -14,13 +13,12 @@ import {
   Check,
   X,
   Building2,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  FileText,
   Calendar,
   MessageSquare,
-  Loader2
+  FileText,
+  Loader2,
+  Edit,
+  ChevronRight
 } from 'lucide-react'
 import { 
   formatPhone, 
@@ -30,19 +28,26 @@ import {
   normalizePhone
 } from '@/lib/utils'
 import { 
-  calculateEmployeeProblems,
-  generateWhatsAppMessage,
-  type UrgencySettings,
-  type EmployeeUrgencyData
-} from '@/lib/urgency'
+  getDocumentStatus,
+  getStatusClasses,
+  formatDate,
+  getEmployeeProblems,
+  generateWhatsAppMessage
+} from '@/lib/document-status'
 import DateEditor from './date-editor'
 import CommentEditor from './comment-editor'
 import DocumentManager from './document-manager'
 
-interface Employee extends EmployeeUrgencyData {
+interface Employee {
+  id: string
   number: number | null
+  fullName: string
   phone: string | null
   department: string | null
+  patentDate: Date | null
+  registrationDate: Date | null
+  passportDate: Date | null
+  checkDate: Date | null
   comment: string | null
   sent: boolean
   createdAt: Date
@@ -56,35 +61,11 @@ interface EmployeeCardProps {
 
 export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) {
   const [isUpdating, setIsUpdating] = useState(false)
-  const [settings, setSettings] = useState<UrgencySettings | null>(null)
   const [showDocuments, setShowDocuments] = useState(false)
   
-  useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  const fetchSettings = async () => {
-    try {
-      const response = await fetch('/api/settings')
-      if (response.ok) {
-        const data = await response.json()
-        setSettings({
-          urgentDaysDefault: data.urgentDaysDefault,
-          warnDaysDefault: data.warnDaysDefault,
-          whatsappTemplate: data.whatsappTemplate,
-          perFieldOverrides: data.perFieldOverrides || {}
-        })
-      }
-    } catch (error) {
-      console.error('Error fetching settings:', error)
-    }
-  }
-
-  const problems = settings ? calculateEmployeeProblems(employee, settings) : []
+  const problems = getEmployeeProblems(employee)
   const hasValidPhone = employee.phone && normalizePhone(employee.phone).length >= 10
-  const whatsappMessage = settings ? generateWhatsAppMessage(employee, settings) : ''
-  const urgentProblems = problems.filter(p => p.status === 'expired' || p.status === 'urgent')
-  const warningProblems = problems.filter(p => p.status === 'warning')
+  const whatsappMessage = generateWhatsAppMessage(employee)
 
   const handleStatusToggle = async () => {
     setIsUpdating(true)
@@ -110,45 +91,29 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
   }
 
-  const getPriorityBadge = () => {
-    if (urgentProblems.length > 0) {
-      return (
-        <Badge variant="destructive" className="gap-1">
-          <AlertTriangle className="h-3 w-3" />
-          Срочно
-        </Badge>
-      )
-    } else if (warningProblems.length > 0) {
-      return (
-        <Badge variant="secondary" className="gap-1">
-          <Clock className="h-3 w-3" />
-          Внимание
-        </Badge>
-      )
-    } else {
-      return (
-        <Badge variant="outline" className="gap-1">
-          <CheckCircle className="h-3 w-3" />
-          В порядке
-        </Badge>
-      )
-    }
-  }
+  const documentFields = [
+    { key: 'patentDate', label: 'Патент', date: employee.patentDate },
+    { key: 'registrationDate', label: 'Регистрация', date: employee.registrationDate },
+    { key: 'passportDate', label: 'Паспорт', date: employee.passportDate },
+    { key: 'checkDate', label: 'Чек', date: employee.checkDate }
+  ]
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="shadow-sm hover:shadow-md transition-all duration-200 border-0 bg-white dark:bg-gray-900">
+      <CardHeader className="pb-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4">
-            <Avatar className="h-12 w-12">
-              <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                {employee.number || getInitials(employee.fullName)}
+            <Avatar className="h-14 w-14 ring-2 ring-gray-100 dark:ring-gray-800">
+              <AvatarFallback className="bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-semibold text-lg">
+                {getInitials(employee.fullName)}
               </AvatarFallback>
             </Avatar>
-            <div className="space-y-1">
-              <CardTitle className="text-lg">{employee.fullName}</CardTitle>
+            <div className="space-y-2">
+              <CardTitle className="text-xl text-gray-900 dark:text-white">
+                {employee.fullName}
+              </CardTitle>
               {employee.department && (
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                   <Building2 className="h-4 w-4" />
                   {employee.department}
                 </div>
@@ -156,180 +121,192 @@ export default function EmployeeCard({ employee, onUpdate }: EmployeeCardProps) 
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {employee.sent && (
-              <Badge className="gap-1">
-                <Check className="h-3 w-3" />
+              <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 border-green-200 dark:border-green-800">
+                <Check className="h-3 w-3 mr-1" />
                 Отправлено
               </Badge>
             )}
-            {getPriorityBadge()}
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
-        {/* Problems Section */}
-        {urgentProblems.length > 0 && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Требует немедленного внимания</AlertTitle>
-            <AlertDescription>
-              <ul className="mt-2 space-y-1">
-                {urgentProblems.map((problem, index) => (
-                  <li key={index} className="text-sm">• {problem.message}</li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {warningProblems.length > 0 && urgentProblems.length === 0 && (
-          <Alert>
-            <Clock className="h-4 w-4" />
-            <AlertTitle>Обратите внимание</AlertTitle>
-            <AlertDescription>
-              <ul className="mt-2 space-y-1">
-                {warningProblems.map((problem, index) => (
-                  <li key={index} className="text-sm">• {problem.message}</li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
+      <CardContent className="space-y-8">
+        {/* Problems Alert */}
+        {problems.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-red-500" />
+              Проблемы с документами
+            </h4>
+            <div className="space-y-2">
+              {problems.map((problem, index) => (
+                <div
+                  key={index}
+                  className={`p-4 rounded-xl border text-sm font-medium ${getStatusClasses(problem.status)}`}
+                >
+                  {problem.message}
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Document Dates */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-medium">Даты документов</h4>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <DateEditor
-              label="Патент"
-              date={employee.patentDate}
-              onUpdate={(date) => {
-                // Handle date update
-              }}
-            />
-            <DateEditor
-              label="Регистрация"
-              date={employee.registrationDate}
-              onUpdate={(date) => {
-                // Handle date update
-              }}
-            />
-            <DateEditor
-              label="Паспорт"
-              date={employee.passportDate}
-              onUpdate={(date) => {
-                // Handle date update
-              }}
-            />
-            <DateEditor
-              label="Чек"
-              date={employee.checkDate}
-              onUpdate={(date) => {
-                // Handle date update
-              }}
-            />
+          <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-gray-500" />
+            Даты документов
+          </h4>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {documentFields.map(({ key, label, date }) => {
+              const status = getDocumentStatus(date)
+              return (
+                <div key={key} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {label}
+                    </span>
+                    <DateEditor
+                      field={key}
+                      date={date}
+                      onUpdate={(newDate) => {
+                        // Handle date update
+                        fetch(`/api/employees/${employee.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ [key]: newDate?.toISOString() })
+                        }).then(res => res.json()).then(onUpdate)
+                      }}
+                    />
+                  </div>
+                  <div className={`p-3 rounded-xl border text-center text-sm font-medium ${getStatusClasses(status)}`}>
+                    {date ? formatDate(date) : 'Не указано'}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
 
         {/* Comment */}
-        {employee.comment && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">Комментарий</h4>
-            </div>
-            <p className="text-sm text-muted-foreground bg-muted rounded-lg p-3">
-              {employee.comment}
-            </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-gray-500" />
+              Комментарий
+            </h4>
+            <CommentEditor
+              comment={employee.comment || ''}
+              onUpdate={(comment) => {
+                fetch(`/api/employees/${employee.id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ comment })
+                }).then(res => res.json()).then(onUpdate)
+              }}
+            />
           </div>
-        )}
-
-        {/* Contact Info */}
-        {employee.phone && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">Контакт</h4>
+          {employee.comment && (
+            <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                {employee.comment}
+              </p>
             </div>
-            <p className="text-sm font-mono">{formatPhone(employee.phone)}</p>
+          )}
+        </div>
+
+        {/* Contact */}
+        {employee.phone && (
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+              <Phone className="h-4 w-4 text-gray-500" />
+              Контакт
+            </h4>
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl">
+              <p className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                {formatPhone(employee.phone)}
+              </p>
+            </div>
           </div>
         )}
 
         <Separator />
 
         {/* Actions */}
-        <div className="flex flex-wrap gap-2">
-          {hasValidPhone && whatsappMessage && (
-            <>
-              <Button 
-                size="sm"
-                onClick={() => window.open(generateWhatsAppLink(employee.phone!, whatsappMessage), '_blank')}
-                className="gap-2"
-              >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
-              </Button>
-              
-              <Button 
-                size="sm"
-                variant="secondary"
-                onClick={() => window.open(generateTelegramLink(employee.phone!), '_blank')}
-                className="gap-2"
-              >
-                <Send className="h-4 w-4" />
-                Telegram
-              </Button>
-              
-              <Button 
-                size="sm"
-                variant="secondary"
-                onClick={() => window.open(generateCallLink(employee.phone!), '_blank')}
-                className="gap-2"
-              >
-                <Phone className="h-4 w-4" />
-                Позвонить
-              </Button>
-            </>
-          )}
-          
-          <Button
-            size="sm"
-            variant={employee.sent ? "destructive" : "default"}
-            onClick={handleStatusToggle}
-            disabled={isUpdating}
-            className="gap-2 ml-auto"
-          >
-            {isUpdating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : employee.sent ? (
-              <X className="h-4 w-4" />
-            ) : (
-              <Check className="h-4 w-4" />
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-3">
+            {hasValidPhone && whatsappMessage && (
+              <>
+                <Button 
+                  size="sm"
+                  onClick={() => window.open(generateWhatsAppLink(employee.phone!, whatsappMessage), '_blank')}
+                  className="flex-1 sm:flex-none gap-2"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  WhatsApp
+                </Button>
+                
+                <Button 
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => window.open(generateTelegramLink(employee.phone!), '_blank')}
+                  className="flex-1 sm:flex-none gap-2"
+                >
+                  <Send className="h-4 w-4" />
+                  Telegram
+                </Button>
+                
+                <Button 
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => window.open(generateCallLink(employee.phone!), '_blank')}
+                  className="flex-1 sm:flex-none gap-2"
+                >
+                  <Phone className="h-4 w-4" />
+                  Позвонить
+                </Button>
+              </>
             )}
-            {employee.sent ? 'Отменить' : 'Отправлено'}
-          </Button>
+          </div>
+          
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowDocuments(!showDocuments)}
+              className="flex-1 gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              {showDocuments ? 'Скрыть документы' : 'Управление документами'}
+              <ChevronRight className={`h-4 w-4 ml-auto transition-transform ${showDocuments ? 'rotate-90' : ''}`} />
+            </Button>
+            
+            <Button
+              size="sm"
+              variant={employee.sent ? "destructive" : "default"}
+              onClick={handleStatusToggle}
+              disabled={isUpdating}
+              className="gap-2"
+            >
+              {isUpdating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : employee.sent ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
+              {employee.sent ? 'Отменить' : 'Отправлено'}
+            </Button>
+          </div>
         </div>
 
-        {/* Documents Toggle */}
-        <div className="space-y-4">
-          <Button
-            variant="outline"
-            onClick={() => setShowDocuments(!showDocuments)}
-            className="w-full gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            {showDocuments ? 'Скрыть документы' : 'Показать документы'}
-          </Button>
-          
-          {showDocuments && (
+        {/* Documents Section */}
+        {showDocuments && (
+          <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
             <DocumentManager employeeId={employee.id} />
-          )}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

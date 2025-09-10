@@ -7,9 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, User, Phone, Building2, Calendar, MessageSquare, Save, AlertCircle, Loader2 } from 'lucide-react'
+import { ArrowLeft, User, Phone, Building2, Calendar, MessageSquare, Save, Loader2 } from 'lucide-react'
 import { capitalizeFullName, normalizePhone } from '@/lib/utils'
 
 export default function NewEmployeePage() {
@@ -86,10 +85,10 @@ export default function NewEmployeePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-6xl mx-auto px-6 py-6">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
@@ -99,43 +98,45 @@ export default function NewEmployeePage() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Назад
             </Button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <User className="h-6 w-6 text-primary-foreground" />
-            </div>
             <div>
-              <h1 className="text-xl font-semibold">Добавить сотрудника</h1>
-              <p className="text-sm text-muted-foreground">Создание новой записи</p>
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Добавить сотрудника
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                Создание новой записи в системе
+              </p>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle>Новый сотрудник</CardTitle>
-              <CardDescription>
-                Заполните информацию о сотруднике и датах документов
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Basic Information */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="text-lg font-medium">Основная информация</h3>
-                  </div>
-                  
-                  <div className="space-y-2">
+      <main className="max-w-4xl mx-auto px-6 py-12">
+        <Card className="shadow-sm border-0">
+          <CardHeader className="pb-8">
+            <CardTitle className="text-xl">Информация о сотруднике</CardTitle>
+            <CardDescription>
+              Заполните основные данные и даты документов
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Basic Info */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <User className="h-5 w-5 text-gray-500" />
+                  <h3 className="text-lg font-medium">Основная информация</h3>
+                </div>
+                
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="fullName">ФИО *</Label>
                     <Input
                       id="fullName"
                       value={formData.fullName}
                       onChange={(e) => handleInputChange('fullName', e.target.value)}
                       placeholder="Иванов Иван Иванович"
+                      className="text-lg"
                       required
                     />
                   </div>
@@ -149,13 +150,13 @@ export default function NewEmployeePage() {
                       placeholder="79001234567"
                       type="tel"
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       Только цифры, минимум 10 символов
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="department">Отдел/Локация</Label>
+                    <Label htmlFor="department">Отдел</Label>
                     <Input
                       id="department"
                       value={formData.department}
@@ -164,114 +165,115 @@ export default function NewEmployeePage() {
                     />
                   </div>
                 </div>
+              </div>
 
-                <Separator />
+              <Separator />
 
-                {/* Document Dates */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="text-lg font-medium">Даты документов</h3>
-                  </div>
-                  
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="patentDate">Патент</Label>
-                      <Input
-                        id="patentDate"
-                        type="date"
-                        value={formData.patentDate}
-                        onChange={(e) => handleInputChange('patentDate', e.target.value)}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="registrationDate">Регистрация</Label>
-                      <Input
-                        id="registrationDate"
-                        type="date"
-                        value={formData.registrationDate}
-                        onChange={(e) => handleInputChange('registrationDate', e.target.value)}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="passportDate">Паспорт</Label>
-                      <Input
-                        id="passportDate"
-                        type="date"
-                        value={formData.passportDate}
-                        onChange={(e) => handleInputChange('passportDate', e.target.value)}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="checkDate">Чек</Label>
-                      <Input
-                        id="checkDate"
-                        type="date"
-                        value={formData.checkDate}
-                        onChange={(e) => handleInputChange('checkDate', e.target.value)}
-                      />
-                    </div>
-                  </div>
+              {/* Document Dates */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Calendar className="h-5 w-5 text-gray-500" />
+                  <h3 className="text-lg font-medium">Даты документов</h3>
                 </div>
-
-                <Separator />
-
-                {/* Comment */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="text-lg font-medium">Комментарий</h3>
-                  </div>
+                
+                <div className="grid gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="comment">Дополнительная информация</Label>
-                    <Textarea
-                      id="comment"
-                      value={formData.comment}
-                      onChange={(e) => handleInputChange('comment', e.target.value)}
-                      placeholder="Дополнительная информация о сотруднике..."
-                      className="min-h-[100px]"
+                    <Label htmlFor="patentDate">Патент</Label>
+                    <Input
+                      id="patentDate"
+                      type="date"
+                      value={formData.patentDate}
+                      onChange={(e) => handleInputChange('patentDate', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="registrationDate">Регистрация</Label>
+                    <Input
+                      id="registrationDate"
+                      type="date"
+                      value={formData.registrationDate}
+                      onChange={(e) => handleInputChange('registrationDate', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="passportDate">Паспорт</Label>
+                    <Input
+                      id="passportDate"
+                      type="date"
+                      value={formData.passportDate}
+                      onChange={(e) => handleInputChange('passportDate', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="checkDate">Чек</Label>
+                    <Input
+                      id="checkDate"
+                      type="date"
+                      value={formData.checkDate}
+                      onChange={(e) => handleInputChange('checkDate', e.target.value)}
                     />
                   </div>
                 </div>
+              </div>
 
-                {/* Error */}
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
+              <Separator />
 
-                {/* Submit */}
-                <div className="flex gap-4">
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 gap-2"
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
-                    {isSubmitting ? 'Создание...' : 'Создать сотрудника'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => router.back()}
-                    disabled={isSubmitting}
-                  >
-                    Отмена
-                  </Button>
+              {/* Comment */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-gray-500" />
+                  <h3 className="text-lg font-medium">Комментарий</h3>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
+                <div className="space-y-2">
+                  <Label htmlFor="comment">Дополнительная информация</Label>
+                  <Textarea
+                    id="comment"
+                    value={formData.comment}
+                    onChange={(e) => handleInputChange('comment', e.target.value)}
+                    placeholder="Заметки о сотруднике..."
+                    className="min-h-[120px]"
+                  />
+                </div>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl">
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                    {error}
+                  </p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-4 pt-6">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 gap-2"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  {isSubmitting ? 'Создание...' : 'Создать сотрудника'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  disabled={isSubmitting}
+                >
+                  Отмена
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </main>
     </div>
   )

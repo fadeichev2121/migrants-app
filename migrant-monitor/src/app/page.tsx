@@ -8,29 +8,29 @@ import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Plus, Settings, Users, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Plus, Settings } from 'lucide-react'
 
 export default function HomePage() {
   const router = useRouter()
   const [showOnlyUrgent, setShowOnlyUrgent] = useState(false)
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {/* Clean Header */}
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-6xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <Users className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold">Монитор мигрантов</h1>
-                <p className="text-sm text-muted-foreground">Управление документами</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Монитор мигрантов
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                Управление документами и уведомлениями
+              </p>
             </div>
             
             <div className="flex items-center space-x-4">
+              <ThemeToggle />
               <Button
                 variant="ghost"
                 size="sm"
@@ -38,27 +38,15 @@ export default function HomePage() {
               >
                 <Settings className="h-4 w-4" />
               </Button>
-              <ThemeToggle />
               <Button onClick={() => router.push('/employees/new')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Добавить сотрудника
               </Button>
             </div>
           </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-semibold mb-2">Уведомления WhatsApp</h1>
-          <p className="text-muted-foreground mb-6">
-            Отслеживайте сроки документов и отправляйте автоматические уведомления
-          </p>
           
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="mt-8 flex items-center space-x-6">
             <div className="flex items-center space-x-2">
               <Switch
                 id="urgent-filter"
@@ -66,13 +54,15 @@ export default function HomePage() {
                 onCheckedChange={setShowOnlyUrgent}
               />
               <Label htmlFor="urgent-filter" className="text-sm font-medium">
-                Показать только срочные
+                Только срочные
               </Label>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* Employee List */}
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-6 py-12">
         <EmployeeList showOnlyUrgent={showOnlyUrgent} />
       </main>
 

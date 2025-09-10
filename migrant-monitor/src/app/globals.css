@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,6 +25,11 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+    
+    /* Custom status colors */
+    --status-expired: 0 84% 60%;
+    --status-warning: 45 93% 47%;
+    --status-success: 142 76% 36%;
   }
 
   .dark {
@@ -46,6 +52,11 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 94.1%;
+    
+    /* Custom status colors for dark mode */
+    --status-expired: 0 84% 60%;
+    --status-warning: 45 93% 47%;
+    --status-success: 142 76% 36%;
   }
 
   * {
@@ -55,6 +66,30 @@
   body {
     background: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Status color utilities */
+@layer utilities {
+  .bg-status-expired {
+    background-color: hsl(var(--status-expired) / 0.1);
+    border-color: hsl(var(--status-expired) / 0.3);
+    color: hsl(var(--status-expired));
+  }
+  
+  .bg-status-warning {
+    background-color: hsl(var(--status-warning) / 0.1);
+    border-color: hsl(var(--status-warning) / 0.3);
+    color: hsl(var(--status-warning));
+  }
+  
+  .bg-status-success {
+    background-color: hsl(var(--status-success) / 0.1);
+    border-color: hsl(var(--status-success) / 0.3);
+    color: hsl(var(--status-success));
   }
 }
