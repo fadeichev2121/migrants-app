@@ -1,20 +1,21 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import EmployeeCard from './employee-card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { 
   Users, 
   Send, 
-  Coffee, 
-  Sparkles, 
-  TrendingUp, 
   AlertTriangle, 
-  CheckCircle2, 
-  Zap,
-  Crown,
-  Target,
-  Rocket
+  CheckCircle, 
+  Coffee,
+  Plus,
+  RefreshCw
 } from 'lucide-react'
 
 interface Employee {
@@ -38,13 +39,16 @@ interface EmployeeListProps {
 }
 
 export default function EmployeeList({ showOnlyUrgent }: EmployeeListProps) {
+  const router = useRouter()
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'active' | 'sent'>('active')
 
   const fetchEmployees = useCallback(async () => {
     try {
       setLoading(true)
+      setError(null)
       const params = new URLSearchParams()
       
       if (showOnlyUrgent) {
@@ -56,10 +60,11 @@ export default function EmployeeList({ showOnlyUrgent }: EmployeeListProps) {
         const data = await response.json()
         setEmployees(data)
       } else {
-        console.error('Failed to fetch employees')
+        throw new Error('Failed to fetch employees')
       }
     } catch (error) {
       console.error('Error fetching employees:', error)
+      setError('Ошибка загрузки данных')
     } finally {
       setLoading(false)
     }
@@ -80,203 +85,163 @@ export default function EmployeeList({ showOnlyUrgent }: EmployeeListProps) {
   const activeEmployees = employees.filter(emp => !emp.sent)
   const sentEmployees = employees.filter(emp => emp.sent)
 
+  // Loading State
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex flex-col items-center space-y-6">
-          <div className="relative">
-            <div className="w-20 h-20 rounded-full border-4 border-purple-200 dark:border-purple-800"></div>
-            <div className="absolute top-0 left-0 w-20 h-20 rounded-full border-4 border-purple-600 border-t-transparent animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-purple-500 animate-pulse" />
-            </div>
-          </div>
-          <p className="text-xl font-bold text-gray-600 dark:text-gray-400">Загрузка данных...</p>
-          <div className="flex gap-2">
-            <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-          </div>
+      <div className="space-y-8">
+        {/* Stats Cards Skeleton */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-3">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-16" />
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+        
+        {/* List Skeleton */}
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-32" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     )
   }
 
+  // Error State
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Ошибка загрузки</AlertTitle>
+        <AlertDescription className="mt-2">
+          {error}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetchEmployees}
+            className="mt-3"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Повторить
+          </Button>
+        </AlertDescription>
+      </Alert>
+    )
+  }
+
   return (
     <div className="space-y-8">
-      {/* Futuristic Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="group relative overflow-hidden glass dark:glass-dark rounded-3xl p-8 border border-white/30 dark:border-gray-700/50 shadow-2xl hover-lift">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 animate-gradient"></div>
-          <div className="relative flex items-center justify-between">
-            <div>
-              <p className="text-blue-600 dark:text-blue-400 text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Всего сотрудников
-              </p>
-              <p className="text-4xl font-black text-blue-900 dark:text-blue-100 mt-2 animate-scale-in">
-                {employees.length}
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                <TrendingUp className="w-4 h-4 text-emerald-500" />
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Активная база</span>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-xl animate-float">
-                <Users className="w-8 h-8 text-white" />
-              </div>
-              <div className="absolute inset-0 bg-blue-400 rounded-2xl blur-xl opacity-30 animate-pulse-soft"></div>
-            </div>
-          </div>
-        </div>
+      {/* Stats Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Всего сотрудников</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{employees.length}</div>
+            <p className="text-xs text-muted-foreground">В системе</p>
+          </CardContent>
+        </Card>
 
-        <div className="group relative overflow-hidden glass dark:glass-dark rounded-3xl p-8 border border-white/30 dark:border-gray-700/50 shadow-2xl hover-lift">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 animate-gradient"></div>
-          <div className="relative flex items-center justify-between">
-            <div>
-              <p className="text-amber-600 dark:text-amber-400 text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 animate-pulse" />
-                Требуют внимания
-              </p>
-              <p className="text-4xl font-black text-amber-900 dark:text-amber-100 mt-2 animate-scale-in">
-                {activeEmployees.length}
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                <Target className="w-4 h-4 text-amber-500" />
-                <span className="text-xs font-bold text-amber-600 dark:text-amber-400">Активные задачи</span>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-xl animate-bounce-gentle">
-                <Zap className="w-8 h-8 text-white" />
-              </div>
-              <div className="absolute inset-0 bg-amber-400 rounded-2xl blur-xl opacity-30 animate-ping"></div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Требуют внимания</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{activeEmployees.length}</div>
+            <p className="text-xs text-muted-foreground">Активные задачи</p>
+          </CardContent>
+        </Card>
 
-        <div className="group relative overflow-hidden glass dark:glass-dark rounded-3xl p-8 border border-white/30 dark:border-gray-700/50 shadow-2xl hover-lift">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-green-500/10 animate-gradient"></div>
-          <div className="relative flex items-center justify-between">
-            <div>
-              <p className="text-emerald-600 dark:text-emerald-400 text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4" />
-                Уведомления отправлены
-              </p>
-              <p className="text-4xl font-black text-emerald-900 dark:text-emerald-100 mt-2 animate-scale-in">
-                {sentEmployees.length}
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                <Crown className="w-4 h-4 text-emerald-500 animate-bounce-gentle" />
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Завершено</span>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-green-500 rounded-2xl flex items-center justify-center shadow-xl animate-glow">
-                <Send className="w-8 h-8 text-white" />
-              </div>
-              <div className="absolute inset-0 bg-emerald-400 rounded-2xl blur-xl opacity-30 animate-pulse-soft"></div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Уведомления отправлены</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{sentEmployees.length}</div>
+            <p className="text-xs text-muted-foreground">Завершено</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Modern Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'active' | 'sent')} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 glass dark:glass-dark rounded-3xl p-2 border border-white/30 dark:border-gray-700/50 shadow-xl">
-          <TabsTrigger 
-            value="active" 
-            className="flex items-center gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-2xl font-black transition-all duration-300 hover:scale-105"
-          >
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5" />
-              <span>Активные</span>
-              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-black">
-                {activeEmployees.length}
-              </div>
-            </div>
+      {/* Employee Tabs */}
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'active' | 'sent')}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="active" className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Активные ({activeEmployees.length})
           </TabsTrigger>
-          <TabsTrigger 
-            value="sent"
-            className="flex items-center gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-500 data-[state=active]:text-white rounded-2xl font-black transition-all duration-300 hover:scale-105"
-          >
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" />
-              <span>Отправленные</span>
-              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-black">
-                {sentEmployees.length}
-              </div>
-            </div>
+          <TabsTrigger value="sent" className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4" />
+            Отправленные ({sentEmployees.length})
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="active" className="space-y-6 mt-8">
+        <TabsContent value="active" className="space-y-4 mt-6">
           {activeEmployees.length === 0 ? (
-            <div className="text-center py-20 animate-scale-in">
-              <div className="relative mb-8">
-                <div className="w-32 h-32 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full flex items-center justify-center mx-auto shadow-2xl animate-float">
-                  <Coffee className="w-16 h-16 text-white" />
-                </div>
-                <div className="absolute inset-0 bg-emerald-400 rounded-full blur-2xl opacity-30 animate-pulse-soft"></div>
-                <Sparkles className="absolute top-4 right-4 w-8 h-8 text-emerald-300 animate-bounce" />
-              </div>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent mb-4">
-                Идеальный порядок! ✨
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto text-lg leading-relaxed">
-                Все документы в порядке, можно расслабиться и насладиться кофе ☕
-              </p>
-            </div>
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <Coffee className="h-12 w-12 text-muted-foreground mb-4" />
+                <CardTitle className="text-xl mb-2">Всё под контролем!</CardTitle>
+                <CardDescription className="text-center mb-6">
+                  Нет сотрудников с проблемными документами
+                </CardDescription>
+                <Button onClick={() => router.push('/employees/new')}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Добавить сотрудника
+                </Button>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="grid gap-6">
-              {activeEmployees.map((employee, index) => (
-                <div
+            <div className="space-y-4">
+              {activeEmployees.map((employee) => (
+                <EmployeeCard
                   key={employee.id}
-                  className="animate-slide-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <EmployeeCard
-                    employee={employee}
-                    onUpdate={handleEmployeeUpdate}
-                  />
-                </div>
+                  employee={employee}
+                  onUpdate={handleEmployeeUpdate}
+                />
               ))}
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="sent" className="space-y-6 mt-8">
+        <TabsContent value="sent" className="space-y-4 mt-6">
           {sentEmployees.length === 0 ? (
-            <div className="text-center py-20 animate-scale-in">
-              <div className="relative mb-8">
-                <div className="w-32 h-32 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto shadow-2xl animate-float">
-                  <Rocket className="w-16 h-16 text-white" />
-                </div>
-                <div className="absolute inset-0 bg-blue-400 rounded-full blur-2xl opacity-30 animate-pulse-soft"></div>
-                <Sparkles className="absolute top-4 left-4 w-6 h-6 text-blue-300 animate-ping" />
-                <Target className="absolute bottom-4 right-4 w-6 h-6 text-purple-300 animate-bounce" />
-              </div>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                Готовы к запуску! 🚀
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto text-lg leading-relaxed">
-                Уведомления будут отправлены и сотрудники появятся здесь
-              </p>
-            </div>
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <Send className="h-12 w-12 text-muted-foreground mb-4" />
+                <CardTitle className="text-xl mb-2">Готовы к отправке</CardTitle>
+                <CardDescription className="text-center">
+                  Сотрудники с отправленными уведомлениями появятся здесь
+                </CardDescription>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="grid gap-6">
-              {sentEmployees.map((employee, index) => (
-                <div
+            <div className="space-y-4">
+              {sentEmployees.map((employee) => (
+                <EmployeeCard
                   key={employee.id}
-                  className="animate-slide-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <EmployeeCard
-                    employee={employee}
-                    onUpdate={handleEmployeeUpdate}
-                  />
-                </div>
+                  employee={employee}
+                  onUpdate={handleEmployeeUpdate}
+                />
               ))}
             </div>
           )}
